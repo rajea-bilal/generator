@@ -61,7 +61,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "preload",
-    href: "/favicon.png", 
+    href: "/kaizen-favicon.png", 
     as: "image",
     type: "image/png",
   },
@@ -70,7 +70,7 @@ export const links: Route.LinksFunction = () => [
   {
     rel: "icon",
     type: "image/png",
-    href: "/favicon.png",
+    href: "/kaizen-favicon.png",
   },
 ];
 
