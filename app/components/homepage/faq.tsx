@@ -4,7 +4,7 @@ const FAQ_ITEMS = [
   {
     question: "How long does it take to get a SaaS MVP live?",
     answer:
-      "With Kaizen's TypeScript-first stack and pre-built auth, payments and dashboard, most teams ship a functional MVP within a weekend.",
+      "With Kaizen's TypeScript-first stack and pre-built auth, payments and dashboard, most people can ship a fully-functional MVP within a weekend.",
   },
   {
     question: "Is everything type-safe end-to-end?",

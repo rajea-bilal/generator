@@ -7,7 +7,7 @@ import {
   ReactIcon,
   ReactRouter,
   Plunk,
-  Typescript,
+  ClerkLogo,
 } from "~/components/logos";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
@@ -51,7 +51,7 @@ export default function IntegrationsSection({
 
               <div className="mx-auto flex w-fit justify-center gap-2">
                 <IntegrationCard>
-                  <Typescript />
+                  <ClerkLogo />
                 </IntegrationCard>
 
                 <IntegrationCard>
@@ -68,7 +68,7 @@ export default function IntegrationsSection({
               </p>
 
               <p className="text-muted-foreground text-xl">
-                Built for speed with type-safety at its core, so you stay shipping fast, always.
+                Built for speed with type-safety, so you stay shipping fast, always.
               </p>
 
               <div className="flex justify-center sm:justify-start">
