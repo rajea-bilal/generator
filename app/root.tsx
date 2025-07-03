@@ -27,7 +27,7 @@ const convex = isFeatureEnabled('convex') && config.services.convex?.url
 export async function loader(args: Route.LoaderArgs) {
   // Only use Clerk auth loader if auth is enabled
   if (isFeatureEnabled('auth') && isServiceEnabled('clerk')) {
-    return rootAuthLoader(args);
+  return rootAuthLoader(args);
   }
   return {};
 }
@@ -99,17 +99,17 @@ export default function App({ loaderData }: Route.ComponentProps) {
 
   // Case 1: Both auth and convex enabled
   if (authEnabled && convexEnabled && convex) {
-    return (
-      <ClerkProvider
-        loaderData={loaderData}
-        signUpFallbackRedirectUrl="/"
-        signInFallbackRedirectUrl="/"
-      >
-        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          <Outlet />
-        </ConvexProviderWithClerk>
-      </ClerkProvider>
-    );
+  return (
+    <ClerkProvider
+      loaderData={loaderData}
+      signUpFallbackRedirectUrl="/"
+      signInFallbackRedirectUrl="/"
+    >
+      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+        <Outlet />
+      </ConvexProviderWithClerk>
+    </ClerkProvider>
+  );
   }
 
   // Case 2: Only auth enabled

@@ -242,8 +242,8 @@ FRONTEND_URL="http://localhost:5173"
    - View pricing
    - Subscribe with test card:
      - Card: 4242 4242 4242 4242
-     - Any future expiry date
-     - Any CVC
+   - Any future expiry date
+   - Any CVC
    - Access dashboard
    - Use chat functionality
 

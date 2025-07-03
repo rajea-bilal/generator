@@ -33,10 +33,30 @@ export const Navbar = ({
 
   React.useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const scrolled = scrollY > 1; // Even lower threshold - any scroll at all
+      console.log('Multiple scroll checks:', {
+        windowScrollY: window.scrollY,
+        documentScrollTop: document.documentElement.scrollTop,
+        bodyScrollTop: document.body.scrollTop,
+        pageYOffset: window.pageYOffset,
+        finalScrollY: scrollY,
+        isScrolled: scrolled
+      });
+      setIsScrolled(scrolled);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    
+    // Set initial scroll state
+    handleScroll();
+    
+    // Add multiple event listeners for better compatibility
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    document.addEventListener("scroll", handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const handleNavClick = useCallback((href: string) => {
@@ -76,15 +96,19 @@ export const Navbar = ({
     <header>
       <nav
         data-state={menuState && "active"}
-        className="fixed z-99 w-full px-2"
+        className="fixed z-50 w-full px-2"
       >
         <div
           className={cn(
             "mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12",
             isScrolled &&
-              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5"
+              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5 shadow-lg"
           )}
         >
+          {/* Temporary debug indicator */}
+          <div className="absolute top-0 left-0 bg-red-500 text-white px-2 py-1 text-xs z-10">
+            Debug: {isScrolled ? 'SCROLLED' : 'NOT SCROLLED'}
+          </div>
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
             <div className="flex w-full justify-between lg:w-auto">
               <Link

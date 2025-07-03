@@ -21,10 +21,10 @@ export async function loader(args: Route.LoaderArgs) {
     const auth = await getAuth(args);
     userId = auth.userId;
 
-    // Redirect to sign-in if not authenticated
-    if (!userId) {
-      throw redirect("/sign-in");
-    }
+  // Redirect to sign-in if not authenticated
+  if (!userId) {
+    throw redirect("/sign-in");
+  }
 
     // Get user data if auth is enabled
     user = await createClerkClient({
@@ -39,10 +39,10 @@ export async function loader(args: Route.LoaderArgs) {
     const { api } = await import("../../../convex/_generated/api");
     
     const subscriptionStatus = await fetchQuery(api.subscriptions.checkUserSubscriptionStatus, { userId });
-    
-    // Redirect to subscription-required if no active subscription
-    if (!subscriptionStatus?.hasActiveSubscription) {
-      throw redirect("/subscription-required");
+
+  // Redirect to subscription-required if no active subscription
+  if (!subscriptionStatus?.hasActiveSubscription) {
+    throw redirect("/subscription-required");
     }
   }
 

@@ -113,13 +113,13 @@ http.route({
 
 // Only add resend webhook if email is enabled
 if (isEmailEnabled && resend) {
-  http.route({
-    path: "/resend-webhook",
-    method: "POST",
-    handler: httpAction(async (ctx, req) => {
-      return await resend.handleResendEventWebhook(ctx, req);
-    }),
-  });
+http.route({
+  path: "/resend-webhook",
+  method: "POST",
+  handler: httpAction(async (ctx, req) => {
+    return await resend.handleResendEventWebhook(ctx, req);
+  }),
+});
 }
 
 // Log that routes are configured

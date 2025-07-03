@@ -24,9 +24,9 @@ export default function Chat() {
 
   // Safe access to environment variables only when needed
   const CONVEX_SITE_URL = config.services.convex?.url?.replace(
-    /.cloud$/,
-    ".site"
-  );
+  /.cloud$/,
+  ".site"
+);
 
   if (!CONVEX_SITE_URL) {
     return (

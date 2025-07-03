@@ -9,13 +9,13 @@ import { config, isFeatureEnabled } from "../config";
 function buildRoutes(): RouteConfig {
   const routes: RouteConfig = [
     // Home route is always available
-    index("routes/home.tsx"),
+  index("routes/home.tsx"),
   ];
 
   // Authentication routes
   if (isFeatureEnabled('auth') && config.ui.showAuth) {
     routes.push(
-      route("sign-in/*", "routes/sign-in.tsx"),
+  route("sign-in/*", "routes/sign-in.tsx"),
       route("sign-up/*", "routes/sign-up.tsx")
     );
   }
@@ -23,8 +23,8 @@ function buildRoutes(): RouteConfig {
   // Pricing routes
   if (isFeatureEnabled('payments') && config.ui.showPricing) {
     routes.push(
-      route("pricing", "routes/pricing.tsx"),
-      route("success", "routes/success.tsx"),
+  route("pricing", "routes/pricing.tsx"),
+  route("success", "routes/success.tsx"),
       route("subscription-required", "routes/subscription-required.tsx")
     );
   }
@@ -32,8 +32,8 @@ function buildRoutes(): RouteConfig {
   // Dashboard routes
   if (config.ui.showDashboard) {
     const dashboardRoutes = [
-      route("dashboard", "routes/dashboard/index.tsx"),
-      route("dashboard/settings", "routes/dashboard/settings.tsx"),
+    route("dashboard", "routes/dashboard/index.tsx"),
+    route("dashboard/settings", "routes/dashboard/settings.tsx"),
     ];
 
     // Add chat route if enabled

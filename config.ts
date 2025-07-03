@@ -60,48 +60,62 @@ export interface AppConfig {
 }
 
 // ========================
+// 🌐 ENV VARIABLE HELPER
+// ========================
+// Access env vars safely in both Node (process.env) and browser (import.meta.env)
+const getEnvVar = (key: string): string | undefined => {
+  if (typeof process !== 'undefined' && process.env && process.env[key] !== undefined) {
+    return process.env[key] as string;
+  }
+  if (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env[key] !== undefined) {
+    return (import.meta as any).env[key] as string;
+  }
+  return undefined;
+};
+
+// ========================
 // 🎯 YOUR CONFIGURATION
 // ========================
 // Edit these values to enable/disable features:
 
 export const config: AppConfig = {
   features: {
-    auth: true,        // Enable/disable Clerk authentication
-    payments: true,    // Enable/disable Polar.sh payments
-    convex: true,      // Enable/disable Convex backend
+    auth: false,        // Enable/disable Clerk authentication
+    payments: false,    // Enable/disable Polar.sh payments
+    convex: false,      // Enable/disable Convex backend
     email: false,      // Enable/disable Plunk email (not yet implemented)
   },
   services: {
     clerk: {
-      enabled: true,
-      publishableKey: process.env.VITE_CLERK_PUBLISHABLE_KEY,
-      secretKey: process.env.CLERK_SECRET_KEY,
+      enabled: false,
+      publishableKey: getEnvVar('VITE_CLERK_PUBLISHABLE_KEY'),
+      secretKey: getEnvVar('CLERK_SECRET_KEY'),
     },
     polar: {
-      enabled: true,
-      accessToken: process.env.POLAR_ACCESS_TOKEN,
-      organizationId: process.env.POLAR_ORGANIZATION_ID,
-      webhookSecret: process.env.POLAR_WEBHOOK_SECRET,
+      enabled: false,
+      accessToken: getEnvVar('POLAR_ACCESS_TOKEN'),
+      organizationId: getEnvVar('POLAR_ORGANIZATION_ID'),
+      webhookSecret: getEnvVar('POLAR_WEBHOOK_SECRET'),
     },
     convex: {
-      enabled: true,
-      deployment: process.env.CONVEX_DEPLOYMENT,
-      url: process.env.VITE_CONVEX_URL,
+      enabled: false,
+      deployment: getEnvVar('CONVEX_DEPLOYMENT'),
+      url: getEnvVar('VITE_CONVEX_URL'),
     },
     plunk: {
       enabled: false,
-      apiKey: process.env.PLUNK_API_KEY,
+      apiKey: getEnvVar('PLUNK_API_KEY'),
     },
     openai: {
       enabled: true,
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: getEnvVar('OPENAI_API_KEY'),
     },
   },
   ui: {
-    showPricing: true,    // Show pricing page and components
+    showPricing: false,    // Show pricing page and components
     showDashboard: true,  // Show dashboard routes
     showChat: true,       // Show AI chat functionality
-    showAuth: true,       // Show sign-in/sign-up routes
+    showAuth: false,       // Show sign-in/sign-up routes
   },
 };
 
@@ -164,8 +178,9 @@ export const validateConfig = (): { valid: boolean; errors: string[] } => {
 };
 
 // Environment-specific configs
-export const isDevelopment = process.env.NODE_ENV === 'development';
-export const isProduction = process.env.NODE_ENV === 'production';
+const NODE_ENV = getEnvVar('NODE_ENV') || 'development';
+export const isDevelopment = NODE_ENV === 'development';
+export const isProduction = NODE_ENV === 'production';
 
 // Function to sync configuration with environment variables for Convex
 export const syncConfigWithEnv = () => {

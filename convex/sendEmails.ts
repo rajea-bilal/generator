@@ -14,11 +14,11 @@ if (isEmailEnabled) {
   fromEmail = process.env.DEFAULT_FROM_EMAIL;
   companyName = process.env.COMPANY_NAME;
 
-  if (!fromEmail || !companyName) {
-    throw new Error(
+if (!fromEmail || !companyName) {
+  throw new Error(
       "DEFAULT_FROM_EMAIL and COMPANY_NAME environment variables must be set in your Convex deployment when email is enabled."
-    );
-  }
+  );
+}
   
   resend = new Resend(components.resend, {});
 }
@@ -39,7 +39,7 @@ export const sendWelcomeEmail = internalMutation({
       `<h1>Welcome aboard, ${name}!</h1><p>We're excited to have you at ${companyName}.</p>`
     );
   },
-});
+}); 
 
 // Export resend conditionally
 export { resend }; 
