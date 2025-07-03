@@ -3,7 +3,19 @@ import { paymentWebhook } from "./subscriptions";
 import { httpAction } from "./_generated/server";
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
-import { resend } from "./sendEmails";
+
+// Only import sendEmails if email is enabled
+const isEmailEnabled = process.env.EMAIL_ENABLED === 'true';
+let resend: any;
+
+if (isEmailEnabled) {
+  try {
+    const sendEmailsModule = require('./sendEmails');
+    resend = sendEmailsModule.resend;
+  } catch (error) {
+    console.warn('Failed to import sendEmails module:', error);
+  }
+}
 
 export const chat = httpAction(async (ctx, req) => {
   // Extract the `messages` from the body of the request
@@ -99,13 +111,16 @@ http.route({
   handler: paymentWebhook,
 });
 
-http.route({
-  path: "/resend-webhook",
-  method: "POST",
-  handler: httpAction(async (ctx, req) => {
-    return await resend.handleResendEventWebhook(ctx, req);
-  }),
-});
+// Only add resend webhook if email is enabled
+if (isEmailEnabled && resend) {
+  http.route({
+    path: "/resend-webhook",
+    method: "POST",
+    handler: httpAction(async (ctx, req) => {
+      return await resend.handleResendEventWebhook(ctx, req);
+    }),
+  });
+}
 
 // Log that routes are configured
 console.log("HTTP routes configured");

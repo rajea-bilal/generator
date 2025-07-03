@@ -4,17 +4,47 @@ import {
   layout,
   route,
 } from "@react-router/dev/routes";
+import { config, isFeatureEnabled } from "../config";
 
-export default [
-  index("routes/home.tsx"),
-  route("sign-in/*", "routes/sign-in.tsx"),
-  route("sign-up/*", "routes/sign-up.tsx"),
-  route("pricing", "routes/pricing.tsx"),
-  route("success", "routes/success.tsx"),
-  route("subscription-required", "routes/subscription-required.tsx"),
-  layout("routes/dashboard/layout.tsx", [
-    route("dashboard", "routes/dashboard/index.tsx"),
-    route("dashboard/chat", "routes/dashboard/chat.tsx"),
-    route("dashboard/settings", "routes/dashboard/settings.tsx"),
-  ]),
-] satisfies RouteConfig;
+function buildRoutes(): RouteConfig {
+  const routes: RouteConfig = [
+    // Home route is always available
+    index("routes/home.tsx"),
+  ];
+
+  // Authentication routes
+  if (isFeatureEnabled('auth') && config.ui.showAuth) {
+    routes.push(
+      route("sign-in/*", "routes/sign-in.tsx"),
+      route("sign-up/*", "routes/sign-up.tsx")
+    );
+  }
+
+  // Pricing routes
+  if (isFeatureEnabled('payments') && config.ui.showPricing) {
+    routes.push(
+      route("pricing", "routes/pricing.tsx"),
+      route("success", "routes/success.tsx"),
+      route("subscription-required", "routes/subscription-required.tsx")
+    );
+  }
+
+  // Dashboard routes
+  if (config.ui.showDashboard) {
+    const dashboardRoutes = [
+      route("dashboard", "routes/dashboard/index.tsx"),
+      route("dashboard/settings", "routes/dashboard/settings.tsx"),
+    ];
+
+    // Add chat route if enabled
+    if (config.ui.showChat) {
+      dashboardRoutes.push(route("dashboard/chat", "routes/dashboard/chat.tsx"));
+    }
+
+    routes.push(layout("routes/dashboard/layout.tsx", dashboardRoutes));
+  }
+
+  return routes;
+}
+
+export default buildRoutes() satisfies RouteConfig;

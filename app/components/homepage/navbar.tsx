@@ -5,13 +5,22 @@ import React, { useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
+import { config, isFeatureEnabled } from "../../../config";
 
-const menuItems = [
-  { name: "Home", href: "#hero" },
-  { name: "Features", href: "#features" },
-  { name: "Team", href: "#team" },
-  { name: "Pricing", href: "#pricing" },
-];
+const getMenuItems = () => {
+  const items = [
+    { name: "Home", href: "#hero" },
+    { name: "Features", href: "#features" },
+    { name: "Team", href: "#team" },
+  ];
+
+  // Only show pricing if payments are enabled
+  if (isFeatureEnabled('payments') && config.ui.showPricing) {
+    items.push({ name: "Pricing", href: "#pricing" });
+  }
+
+  return items;
+};
 
 export const Navbar = ({
   loaderData,
@@ -22,6 +31,7 @@ export const Navbar = ({
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isDashboardLoading, setIsDashboardLoading] = React.useState(false);
   const navigate = useNavigate();
+  const menuItems = getMenuItems();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -45,13 +55,25 @@ export const Navbar = ({
   }, []);
 
   // Simple computations don't need useMemo
-  const dashboardLink = !loaderData?.isSignedIn 
-    ? "/sign-up" 
-    : loaderData.hasActiveSubscription ? "/dashboard" : "/pricing";
+  const authEnabled = isFeatureEnabled('auth') && config.ui.showAuth;
+  const paymentsEnabled = isFeatureEnabled('payments') && config.ui.showPricing;
+  const dashboardEnabled = config.ui.showDashboard;
+  
+  const dashboardLink = !authEnabled 
+    ? "/dashboard" 
+    : !loaderData?.isSignedIn 
+      ? "/sign-up" 
+      : loaderData.hasActiveSubscription || !paymentsEnabled 
+        ? "/dashboard" 
+        : "/pricing";
 
-  const dashboardText = !loaderData?.isSignedIn 
-    ? "Get Started (Demo)"
-    : loaderData.hasActiveSubscription ? "Dashboard" : "Subscribe";
+  const dashboardText = !authEnabled 
+    ? "Get Started"
+    : !loaderData?.isSignedIn 
+      ? "Get Started (Demo)"
+      : loaderData.hasActiveSubscription || !paymentsEnabled 
+        ? "Dashboard" 
+        : "Subscribe";
 
   const handleDashboardClick = useCallback(() => {
     setIsDashboardLoading(true);
@@ -130,7 +152,7 @@ export const Navbar = ({
                 >
                   <Github className="w-5 h-5" />
                 </Link>
-                {loaderData?.isSignedIn ? (
+                {authEnabled && loaderData?.isSignedIn ? (
                   <div className="flex items-center gap-3">
                     <Button 
                       size="sm" 
@@ -148,7 +170,7 @@ export const Navbar = ({
                     </Button>
                     <UserButton />
                   </div>
-                ) : (
+                ) : authEnabled ? (
                   <>
                     <Button
                       asChild
@@ -185,6 +207,22 @@ export const Navbar = ({
                       )}
                     </Button>
                   </>
+                ) : (
+                  // When auth is disabled, show a simple get started button
+                  <Button
+                    size="sm"
+                    onClick={handleDashboardClick}
+                    disabled={isDashboardLoading}
+                  >
+                    {isDashboardLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <span>{dashboardText}</span>
+                    )}
+                  </Button>
                 )}
               </div>
             </div>

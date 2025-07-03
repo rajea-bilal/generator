@@ -13,14 +13,46 @@ import { Badge } from "~/components/ui/badge";
 import { Calendar, CreditCard, ExternalLink, Loader2 } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import { useState } from "react";
+import { isFeatureEnabled, config } from "../../config";
 
 export default function SubscriptionStatus() {
-  const { isSignedIn } = useAuth();
+  // Early return if payments are not enabled
+  if (!isFeatureEnabled('payments') || !config.ui.showPricing) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscription Status</CardTitle>
+          <CardDescription>
+            Subscription functionality is currently disabled.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  // Early return if convex is not enabled (needed for subscription data)
+  if (!isFeatureEnabled('convex')) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscription Status</CardTitle>
+          <CardDescription>
+            Subscription data requires backend services.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  const { isSignedIn, userId } = useAuth();
   const [loadingDashboard, setLoadingDashboard] = useState(false);
 
   const subscription = useQuery(api.subscriptions.fetchUserSubscription);
   const subscriptionStatus = useQuery(
-    api.subscriptions.checkUserSubscriptionStatus
+    api.subscriptions.checkUserSubscriptionStatus,
+    {
+      userId: isSignedIn ? userId : undefined,
+    }
   );
   const createPortalUrl = useAction(api.subscriptions.createCustomerPortalUrl);
 

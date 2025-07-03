@@ -7,13 +7,13 @@ import Pricing from "~/components/homepage/pricing";
 import Team from "~/components/homepage/team";
 import { api } from "../../convex/_generated/api";
 import type { Route } from "./+types/home";
-
+import { config } from "../../config";
 export function meta({}: Route.MetaArgs) {
-  const title = "React Starter Kit - Launch Your SAAS Quickly";
+  const title = "Kaizen - Launch Your SAAS Quickly";
   const description =
     "This powerful starter kit is designed to help you launch your SAAS application quickly and efficiently.";
-  const keywords = "React, Starter Kit, SAAS, Launch, Quickly, Efficiently";
-  const siteUrl = "https://www.reactstarter.xyz/";
+  const keywords = "Kaizen, SAAS, Launch, Quickly, Efficiently";
+  const siteUrl = "https://www.kaizen.codeandcreed.tech/";
   const imageUrl =
     "https://jdj14ctwppwprnqu.public.blob.vercel-storage.com/rsk-image-FcUcfBMBgsjNLo99j3NhKV64GT2bQl.png";
 
@@ -32,8 +32,7 @@ export function meta({}: Route.MetaArgs) {
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
     { property: "og:url", content: siteUrl },
-    { property: "og:site_name", content: "React Starter Kit" },
-    { property: "og:image", content: imageUrl },
+    { property: "og:site_name", content: "Kaizen" },
 
     // Twitter Card
     { name: "twitter:card", content: "summary_large_image" },

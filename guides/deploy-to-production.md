@@ -1,27 +1,51 @@
 # Deploying to Production Guide
 
-This guide provides instructions for deploying the application to production using Vercel and Convex.
+This guide provides instructions for deploying the application to production with different configuration options.
 
 **Date:** June 2025
 
 ## Prerequisites
 
+### Required for All Deployments:
 - A Git repository with your code (GitHub, GitLab, or Bitbucket)
 - A [Vercel](https://vercel.com) account
-- Production accounts for:
-  - [Convex](https://dashboard.convex.dev)
-  - [Clerk](https://dashboard.clerk.com)
-  - [Polar](https://polar.sh) (not sandbox)
-  - [Resend](https://resend.com)
-  - [OpenAI](https://platform.openai.com)
+
+### Required Based on Your Configuration:
+
+**If auth: true**
+- [Clerk](https://dashboard.clerk.com) production account
+
+**If convex: true**
+- [Convex](https://dashboard.convex.dev) account
+
+**If payments: true**
+- [Polar](https://polar.sh) production account (not sandbox)
+
+**If chat enabled**
+- [OpenAI](https://platform.openai.com) account
 
 ## Step 1: Prepare Your Repository
 
-1. Ensure all your changes are committed
-2. Push your code to your Git repository
-3. Make sure your `.env` and `.env.local` files are in `.gitignore`
+1. **Configure your features** in `config.ts` for production:
+```typescript
+export const config: AppConfig = {
+  features: {
+    auth: true,        // Set based on your needs
+    payments: true,    // Set based on your needs
+    convex: true,      // Set based on your needs
+    email: false,      // Keep false for now
+  },
+  // ... rest of config
+};
+```
 
-## Step 2: Deploy Backend to Convex
+2. Ensure all your changes are committed
+3. Push your code to your Git repository
+4. Make sure your `.env` and `.env.local` files are in `.gitignore`
+
+## Step 2: Deploy Backend to Convex (If convex: true)
+
+**Skip this step if you disabled Convex in your configuration**
 
 1. Deploy your backend to Convex:
 ```bash
@@ -32,51 +56,55 @@ npx convex deploy
 
 ## Step 3: Configure Production Services
 
-### Clerk Setup
+### Clerk Setup (If auth: true)
+**Skip this section if you disabled auth in your configuration**
+
 1. Create a new production application in Clerk (or switch to production mode)
 2. Get your production API keys
-3. Set up the JWT template for Convex:
+3. Set up the JWT template for Convex (if convex is also enabled):
    - Go to JWT Templates
    - Create a new Convex template
    - Save the issuer URL
 
-### Polar Setup
+### Polar Setup (If payments: true)
+**Skip this section if you disabled payments in your configuration**
+
 1. Switch to [polar.sh](https://polar.sh) (not sandbox)
 2. Create your production organization
 3. Set up your production plans
 4. Get your production API keys and organization ID
 
-### Resend Setup
-1. Verify your production domain
-2. Create a production API key
-3. Generate a webhook signing secret
+## Step 4: Set Environment Variables
 
-## Step 4: Set Convex Environment Variables
+### For Convex (If convex: true)
+**Skip this section if you disabled Convex**
 
-In the [Convex Dashboard](https://dashboard.convex.dev), add these environment variables:
+In the [Convex Dashboard](https://dashboard.convex.dev), add relevant environment variables:
 
 ```env
-# Company & Email Configuration
-DEFAULT_FROM_EMAIL=support@yourdomain.com
-COMPANY_NAME="Your Company Name"
-
 # Frontend Configuration
 FRONTEND_URL="https://your-vercel-domain.com"
 
-# OpenAI
+# OpenAI (if chat enabled)
 OPENAI_API_KEY="sk-..."
 
-# Clerk
+# Clerk (if auth enabled)
 VITE_CLERK_FRONTEND_API_URL="https://your-clerk-frontend-api-url"
 
-# Polar
+# Polar (if payments enabled)
 POLAR_ACCESS_TOKEN="pk_live_..."
 POLAR_ORGANIZATION_ID="org_..."
 POLAR_WEBHOOK_SECRET="whsec_..."
 
-# Resend
-RESEND_API_KEY="re_..."
+# Feature flags (automatically set by config, but include for clarity)
+PAYMENTS_ENABLED="true"
+EMAIL_ENABLED="false"
+AUTH_ENABLED="true"
+CONVEX_ENABLED="true"
 ```
+
+### For Frontend-Only Deployments
+**If you're deploying without Convex, you only need Vercel environment variables**
 
 ## Step 5: Deploy to Vercel
 
@@ -89,21 +117,43 @@ RESEND_API_KEY="re_..."
    - Output Directory: `dist`
    - Install Command: `npm install --legacy-peer-deps`
 
-5. Add these environment variables in Vercel:
+5. Add environment variables in Vercel based on your configuration:
+
+### For Simple Frontend (No Backend)
+```env
+# No environment variables needed!
+```
+
+### For Configurations WITH Convex
 ```env
 # Convex (client-side URLs)
 VITE_CONVEX_URL="https://your-deployment.convex.cloud"
+```
 
+### For Configurations WITH Auth
+```env
 # Clerk
 VITE_CLERK_PUBLISHABLE_KEY="pk_live_..."  # For client-side usage
 CLERK_SECRET_KEY="sk_live_..."            # Required for build time
 ```
 
-Note: All other environment variables (FRONTEND_URL, email configuration, etc.) should be set in your Convex deployment, not in Vercel.
+### Complete Example (Full SaaS)
+```env
+# Convex
+VITE_CONVEX_URL="https://your-deployment.convex.cloud"
+
+# Clerk
+VITE_CLERK_PUBLISHABLE_KEY="pk_live_..."
+CLERK_SECRET_KEY="sk_live_..."
+```
+
+**Note:** All other environment variables (FRONTEND_URL, API keys, etc.) should be set in your Convex deployment, not in Vercel.
 
 6. Deploy the project
 
-## Step 6: Configure Webhooks
+## Step 6: Configure Webhooks (If payments: true)
+
+**Skip this section if you disabled payments in your configuration**
 
 ### Polar Webhooks
 1. In Polar dashboard:
@@ -113,61 +163,94 @@ Note: All other environment variables (FRONTEND_URL, email configuration, etc.) 
    - Select all event types
    - Save the webhook
 
-### Resend Webhooks
-1. In Resend dashboard:
-   - Go to Webhooks
-   - Add endpoint: `https://your-convex-deployment.convex.cloud/resend-webhook`
-   - Save the webhook
-
 ## Step 7: Update Service Configurations
 
-### Clerk
+### Clerk (If auth: true)
+**Skip this section if you disabled auth**
+
 1. In Clerk Dashboard:
    - Add your Vercel domain to allowed origins
    - Update OAuth callback URLs
    - Update any email templates with production URLs
 
-### Polar
+### Polar (If payments: true)
+**Skip this section if you disabled payments**
+
 1. Update subscription success/cancel URLs to your production domain
 2. Test a subscription with a real card
 
-### Resend
-1. Set up domain authentication for better deliverability
-2. Create production email templates
-
 ## Step 8: Final Testing
 
+Test based on your configuration:
+
+### Simple Frontend Testing
+1. Visit your production URL
+2. Navigate through the demo dashboard
+3. Verify all pages load correctly
+
+### Auth-Only Testing
+1. Test the complete auth flow:
+   - Sign up
+   - Email verification (if enabled)
+   - Dashboard access
+   - Chat functionality
+
+### Full SaaS Testing
 1. Test the complete user flow:
    - Sign up
    - Email verification
    - Subscription process
    - Dashboard access
-   - Settings page
+   - Chat functionality
    - Subscription management
 
-2. Monitor logs in:
-   - Convex Dashboard
-   - Clerk Dashboard
-   - Polar Dashboard
-   - Resend Dashboard
+### Monitor logs in enabled services:
+- Convex Dashboard (if convex enabled)
+- Clerk Dashboard (if auth enabled)
+- Polar Dashboard (if payments enabled)
 
-## Production Checklist
+## Production Checklist by Configuration
 
-- [ ] All environment variables are set in Convex
-- [ ] All environment variables are set in Vercel
-- [ ] Clerk JWT template is configured
+### All Configurations
+- [ ] Code is deployed to Vercel
+- [ ] Application loads without errors
+- [ ] Configuration is valid
+
+### If convex: true
+- [ ] Convex environment variables are set
+- [ ] Backend is deployed to Convex
+
+### If auth: true
+- [ ] Clerk environment variables are set in Vercel
+- [ ] OAuth callbacks are updated in Clerk
+- [ ] JWT template is configured (if convex enabled)
+
+### If payments: true
+- [ ] Polar environment variables are set in Convex
 - [ ] Polar webhooks are pointing to production URL
-- [ ] Resend webhooks are pointing to production URL
-- [ ] Domain verification is complete in Resend
-- [ ] All OAuth callbacks are updated in Clerk
 - [ ] Subscription plans are set up in Polar
+
+### If chat enabled
 - [ ] OpenAI API key has sufficient quota
-- [ ] Error monitoring is set up in Convex
 
-## Troubleshooting
+## Troubleshooting by Feature
 
-- If webhooks aren't working, verify the endpoint URLs and secrets
-- If emails aren't sending, check Resend domain verification
-- If auth isn't working, verify Clerk origins and JWT configuration
-- If subscriptions fail, check Polar webhook configuration
-- Monitor Convex logs for any backend errors 
+### General Issues
+- **Build failures**: Check environment variables and TypeScript errors
+- **Configuration errors**: Verify config.ts matches your needs
+- **Missing features**: Check UI flags in config
+
+### Auth Issues (If auth: true)
+- **Auth not working**: Verify Clerk origins and environment variables
+- **JWT errors**: Check Clerk-Convex integration setup
+
+### Payment Issues (If payments: true)
+- **Webhooks not working**: Verify endpoint URLs and secrets
+- **Subscriptions failing**: Check Polar webhook configuration
+
+### Backend Issues (If convex: true)
+- **Database errors**: Monitor Convex logs for backend errors
+- **API failures**: Check Convex environment variables
+
+### Chat Issues (If chat enabled)
+- **Chat not working**: Verify OpenAI API key and Convex configuration 

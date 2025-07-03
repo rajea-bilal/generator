@@ -9,16 +9,27 @@ import {
 
 import { ClerkProvider, useAuth } from "@clerk/react-router";
 import { rootAuthLoader } from "@clerk/react-router/ssr.server";
-import { ConvexReactClient } from "convex/react";
+import { ConvexReactClient, ConvexProvider } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { Analytics } from "@vercel/analytics/react";
+import { config, initializeConfig, isFeatureEnabled, isServiceEnabled } from "../config";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+// Initialize configuration
+initializeConfig();
+
+// Conditionally create Convex client
+const convex = isFeatureEnabled('convex') && config.services.convex?.url 
+  ? new ConvexReactClient(config.services.convex.url)
+  : null;
 
 export async function loader(args: Route.LoaderArgs) {
-  return rootAuthLoader(args);
+  // Only use Clerk auth loader if auth is enabled
+  if (isFeatureEnabled('auth') && isServiceEnabled('clerk')) {
+    return rootAuthLoader(args);
+  }
+  return {};
 }
 export const links: Route.LinksFunction = () => [
   // DNS prefetch for external services
@@ -83,17 +94,48 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  return (
-    <ClerkProvider
-      loaderData={loaderData}
-      signUpFallbackRedirectUrl="/"
-      signInFallbackRedirectUrl="/"
-    >
-      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+  const authEnabled = isFeatureEnabled('auth') && isServiceEnabled('clerk');
+  const convexEnabled = isFeatureEnabled('convex') && convex;
+
+  // Case 1: Both auth and convex enabled
+  if (authEnabled && convexEnabled && convex) {
+    return (
+      <ClerkProvider
+        loaderData={loaderData}
+        signUpFallbackRedirectUrl="/"
+        signInFallbackRedirectUrl="/"
+      >
+        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+          <Outlet />
+        </ConvexProviderWithClerk>
+      </ClerkProvider>
+    );
+  }
+
+  // Case 2: Only auth enabled
+  if (authEnabled && !convexEnabled) {
+    return (
+      <ClerkProvider
+        loaderData={loaderData}
+        signUpFallbackRedirectUrl="/"
+        signInFallbackRedirectUrl="/"
+      >
         <Outlet />
-      </ConvexProviderWithClerk>
-    </ClerkProvider>
-  );
+      </ClerkProvider>
+    );
+  }
+
+  // Case 3: Only convex enabled
+  if (!authEnabled && convexEnabled && convex) {
+    return (
+      <ConvexProvider client={convex}>
+        <Outlet />
+      </ConvexProvider>
+    );
+  }
+
+  // Case 4: Neither auth nor convex enabled
+  return <Outlet />;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

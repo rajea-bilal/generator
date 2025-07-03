@@ -13,8 +13,51 @@ import {
 import { CheckCircle, ArrowRight, Loader2 } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import { useEffect } from "react";
+import { isFeatureEnabled, config } from "../../config";
 
 export default function Success() {
+  // Early return if payments are not enabled
+  if (!isFeatureEnabled('payments') || !config.ui.showPricing) {
+    return (
+      <section className="flex flex-col items-center justify-center min-h-screen px-4">
+        <Card className="max-w-md w-full text-center">
+          <CardHeader>
+            <CardTitle className="text-2xl">Success!</CardTitle>
+            <CardDescription>
+              Thank you for your interest. Payment functionality is currently disabled.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/dashboard">Continue to Dashboard</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+
+  // Early return if convex is not enabled (needed for subscription data)
+  if (!isFeatureEnabled('convex')) {
+    return (
+      <section className="flex flex-col items-center justify-center min-h-screen px-4">
+        <Card className="max-w-md w-full text-center">
+          <CardHeader>
+            <CardTitle className="text-2xl">Success!</CardTitle>
+            <CardDescription>
+              Thank you for your purchase. Backend services are currently unavailable.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/dashboard">Continue to Dashboard</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+
   const { isSignedIn } = useAuth();
   const subscription = useQuery(api.subscriptions.fetchUserSubscription);
   const upsertUser = useMutation(api.users.upsertUser);
