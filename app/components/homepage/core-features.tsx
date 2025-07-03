@@ -38,7 +38,7 @@ export default function CoreFeaturesSection() {
     <section id="features" className="py-16 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
         <h3 className="text-center text-xl font-medium mb-12 text-muted-foreground">
-          Everything works together seamlessly.
+          Everything working together <em>seamlessly</em>.
         </h3>
         <div className="grid gap-12 lg:grid-cols-2 items-center">
           {/* Graphic */}

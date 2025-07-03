@@ -33,15 +33,7 @@ export const Navbar = ({
   React.useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY || document.documentElement.scrollTop;
-      const scrolled = scrollY > 1; // Even lower threshold - any scroll at all
-      console.log('Multiple scroll checks:', {
-        windowScrollY: window.scrollY,
-        documentScrollTop: document.documentElement.scrollTop,
-        bodyScrollTop: document.body.scrollTop,
-        pageYOffset: window.pageYOffset,
-        finalScrollY: scrollY,
-        isScrolled: scrolled
-      });
+      const scrolled = scrollY > 20;
       setIsScrolled(scrolled);
     };
     
@@ -116,7 +108,7 @@ export const Navbar = ({
                 className="flex items-center space-x-2 font-semibold text-xl text-muted-foreground"
                 prefetch="viewport"
               >
-                Kaizen 改善
+                <img src="/kaizen-no-bg.png" alt="Kaizen Logo" className="w-18 h-18" />
               </Link>
 
               <button

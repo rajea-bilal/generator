@@ -5,6 +5,7 @@ import Footer from "~/components/homepage/footer";
 import Integrations from "~/components/homepage/integrations";
 import Pricing from "~/components/homepage/pricing";
 import Team from "~/components/homepage/team";
+import FAQ from "~/components/homepage/faq";
 import { api } from "../../convex/_generated/api";
 import type { Route } from "./+types/home";
 
@@ -96,6 +97,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       <ContentSection />
       <CoreFeaturesSection />
       <Pricing loaderData={loaderData} />
+      <FAQ />
       <Footer />
     </>
   );

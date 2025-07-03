@@ -60,25 +60,25 @@ export default function IntegrationsSection({
               </div>
             </div>
             <div className="mx-auto mt-6 max-w-2xl space-y-6 text-center sm:mt-0 sm:text-left">
-              {/* <h2 className="text-balance text-3xl font-semibold md:text-4xl">
+              <h2 className="text-balance text-3xl font-semibold md:text-4xl">
                 Kaizen
-              </h2> */}
-              <p className="text-muted-foreground text-xl">
-                Build fast, iterate faster.
+              </h2>
+              <p className="text-muted-foreground text-3xl">
+                Build fast. Iterate faster.
               </p>
 
               <p className="text-muted-foreground text-xl">
                 Built for speed with type-safety at its core, so you ship faster, always.
               </p>
 
-              <div className="flex">
+              <div className="flex justify-center sm:justify-start">
                 <Button variant="outline" size="sm" asChild>
                   <Link
                     to="https://github.com/ObaidUr-Rahmaan/kaizen"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    ⭐️ Start on GitHub
+                    ⭐️ Star on GitHub
                   </Link>
                 </Button>
               </div>

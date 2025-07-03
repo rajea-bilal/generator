@@ -12,18 +12,23 @@ export default function ContentSection() {
           </h2>
           <div className="space-y-6">
             <p>
-              Kaizen is built end-to-end in TypeScript, so every prop, query and
-              mutation is fully typed <em>across</em> the stack. Autocomplete
-              just works and refactors are painless.
+              Built end-to-end in TypeScript.
+            </p>
+            <p>
+              Every prop, query and mutation is fully typed <em>across</em> the stack. Autocomplete just works and refactors are painless.
             </p>
             <p>
               Powered by <span className="font-bold">Convex</span>, your entire
               backend—database, storage, cron jobs, and auth hooks—is expressed
               as plain code. No YAML, no dashboards, no hidden state.
+            </p>
+
+            <p>
               Large-language models can read the source tree and generate new
               backend logic in seconds, giving you accurate scaffolds for any
               use-case without bolting on extra services.
             </p>
+
             <p>
               <span className="font-bold">One repo, one language.</span> Zero
               third-party glue.
@@ -34,7 +39,7 @@ export default function ContentSection() {
               size="sm"
               className="gap-1 pr-1.5"
             >
-              <Link to="#">
+              <Link to="https://www.convex.dev/" target="_blank" rel="noopener noreferrer">
                 <span>Learn More</span>
                 <ChevronRight className="size-2" />
               </Link>
