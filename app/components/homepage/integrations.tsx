@@ -71,7 +71,7 @@ export default function IntegrationsSection({
                 Built for speed with type-safety, so you stay shipping fast, always.
               </p>
 
-              <div className="flex justify-center sm:justify-start">
+              <div className="flex gap-2 justify-center sm:justify-start">
                 <Button variant="outline" size="sm" asChild>
                   <Link
                     to="https://github.com/ObaidUr-Rahmaan/kaizen"
@@ -79,6 +79,16 @@ export default function IntegrationsSection({
                     rel="noopener noreferrer"
                   >
                     ⭐️ Star on GitHub
+                  </Link>
+                </Button>
+
+                <Button variant="outline" size="sm" asChild>
+                  <Link
+                    to="https://blueprint.codeandcreed.tech/building-with-kaizen/kaizen"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Go to Docs
                   </Link>
                 </Button>
               </div>
