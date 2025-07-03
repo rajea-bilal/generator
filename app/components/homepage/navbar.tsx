@@ -1,8 +1,8 @@
 "use client";
 import { UserButton } from "@clerk/react-router";
-import { Github, Menu, X, Loader2 } from "lucide-react";
+import { Github, Menu, X } from "lucide-react";
 import React, { useCallback } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { config, isFeatureEnabled } from "../../../config";
@@ -29,8 +29,6 @@ export const Navbar = ({
 }) => {
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
-  const [isDashboardLoading, setIsDashboardLoading] = React.useState(false);
-  const navigate = useNavigate();
   const menuItems = getMenuItems();
 
   React.useEffect(() => {
@@ -57,7 +55,6 @@ export const Navbar = ({
   // Simple computations don't need useMemo
   const authEnabled = isFeatureEnabled('auth') && config.ui.showAuth;
   const paymentsEnabled = isFeatureEnabled('payments') && config.ui.showPricing;
-  const dashboardEnabled = config.ui.showDashboard;
   
   const dashboardLink = !authEnabled 
     ? "/dashboard" 
@@ -75,10 +72,6 @@ export const Navbar = ({
         ? "Dashboard" 
         : "Subscribe";
 
-  const handleDashboardClick = useCallback(() => {
-    setIsDashboardLoading(true);
-    navigate(dashboardLink);
-  }, [navigate, dashboardLink]);
   return (
     <header>
       <nav
@@ -154,19 +147,10 @@ export const Navbar = ({
                 </Link>
                 {authEnabled && loaderData?.isSignedIn ? (
                   <div className="flex items-center gap-3">
-                    <Button 
-                      size="sm" 
-                      onClick={handleDashboardClick}
-                      disabled={isDashboardLoading}
-                    >
-                      {isDashboardLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Loading...
-                        </>
-                      ) : (
+                    <Button asChild size="sm">
+                      <Link to={dashboardLink} prefetch="viewport">
                         <span>{dashboardText}</span>
-                      )}
+                      </Link>
                     </Button>
                     <UserButton />
                   </div>
@@ -192,36 +176,24 @@ export const Navbar = ({
                       </Link>
                     </Button>
                     <Button
+                      asChild
                       size="sm"
                       className={cn(isScrolled ? "lg:inline-flex" : "hidden")}
-                      onClick={handleDashboardClick}
-                      disabled={isDashboardLoading}
                     >
-                      {isDashboardLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Loading...
-                        </>
-                      ) : (
+                      <Link to={dashboardLink} prefetch="viewport">
                         <span>{dashboardText}</span>
-                      )}
+                      </Link>
                     </Button>
                   </>
                 ) : (
                   // When auth is disabled, show a simple get started button
                   <Button
+                    asChild
                     size="sm"
-                    onClick={handleDashboardClick}
-                    disabled={isDashboardLoading}
                   >
-                    {isDashboardLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
+                    <Link to={dashboardLink} prefetch="viewport">
                       <span>{dashboardText}</span>
-                    )}
+                    </Link>
                   </Button>
                 )}
               </div>
