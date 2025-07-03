@@ -38,7 +38,7 @@ export default function TeamSection() {
           <div className="grid grid-cols-2 gap-4 border-t py-6 md:grid-cols-4">
             {members.map((member, index) => (
               <div key={index}>
-                <div className="bg-background size-20 rounded-full border p-0.5 shadow shadow-zinc-950/5">
+                {/* <div className="bg-background size-20 rounded-full border p-0.5 shadow shadow-zinc-950/5">
                   <img
                     className="aspect-square rounded-full object-cover"
                     src={member.avatar}
@@ -47,7 +47,7 @@ export default function TeamSection() {
                     width="460"
                     loading="lazy"
                   />
-                </div>
+                </div> */}
                 <span className="mt-2 block text-sm">{member.name}</span>
                 <span className="text-muted-foreground block text-xs">
                   {member.role}

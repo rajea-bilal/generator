@@ -107,7 +107,7 @@ export const config: AppConfig = {
       apiKey: getEnvVar('PLUNK_API_KEY'),
     },
     openai: {
-      enabled: true,
+      enabled: false,
       apiKey: getEnvVar('OPENAI_API_KEY'),
     },
   },

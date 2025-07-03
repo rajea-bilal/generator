@@ -1,13 +1,13 @@
-import { getAuth } from "@clerk/react-router/ssr.server";
-import { fetchAction, fetchQuery } from "convex/nextjs";
+import { isFeatureEnabled, isServiceEnabled } from "../../config";
 import ContentSection from "~/components/homepage/content";
+import CoreFeaturesSection from "~/components/homepage/core-features";
 import Footer from "~/components/homepage/footer";
 import Integrations from "~/components/homepage/integrations";
 import Pricing from "~/components/homepage/pricing";
 import Team from "~/components/homepage/team";
 import { api } from "../../convex/_generated/api";
 import type { Route } from "./+types/home";
-import { config } from "../../config";
+
 export function meta({}: Route.MetaArgs) {
   const title = "Kaizen - Launch Your SAAS Quickly";
   const description =
@@ -52,20 +52,35 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader(args: Route.LoaderArgs) {
-  const { userId } = await getAuth(args);
+  const authEnabled = isFeatureEnabled("auth") && isServiceEnabled("clerk");
+  const convexEnabled = isFeatureEnabled("convex") && isServiceEnabled("convex");
 
-  // Parallel data fetching to reduce waterfall
-  const [subscriptionData, plans] = await Promise.all([
-    userId
-      ? fetchQuery(api.subscriptions.checkUserSubscriptionStatus, {
-          userId,
-        }).catch((error) => {
-          console.error("Failed to fetch subscription data:", error);
-          return null;
-        })
-      : Promise.resolve(null),
-    fetchAction(api.subscriptions.getAvailablePlans),
-  ]);
+  // 1. Auth: get userId if auth enabled, else null
+  let userId: string | null = null;
+  if (authEnabled) {
+    const { getAuth } = await import("@clerk/react-router/ssr.server");
+    ({ userId } = await getAuth(args));
+  }
+
+  // 2. Fetch subscription status & plans only if Convex enabled
+  let subscriptionData: { hasActiveSubscription: boolean } | null = null;
+  let plans: any = null;
+
+  if (convexEnabled) {
+    const { fetchQuery, fetchAction } = await import("convex/nextjs");
+
+    [subscriptionData, plans] = await Promise.all([
+      userId
+        ? fetchQuery(api.subscriptions.checkUserSubscriptionStatus, {
+            userId,
+          }).catch((error: unknown) => {
+            console.error("Failed to fetch subscription data:", error);
+            return null;
+          })
+        : Promise.resolve(null),
+      fetchAction(api.subscriptions.getAvailablePlans),
+    ]);
+  }
 
   return {
     isSignedIn: !!userId,
@@ -79,7 +94,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     <>
       <Integrations loaderData={loaderData} />
       <ContentSection />
-      <Team />
+      <CoreFeaturesSection />
       <Pricing loaderData={loaderData} />
       <Footer />
     </>

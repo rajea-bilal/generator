@@ -8,7 +8,6 @@ import {
 } from "react-router";
 
 import { ClerkProvider, useAuth } from "@clerk/react-router";
-import { rootAuthLoader } from "@clerk/react-router/ssr.server";
 import { ConvexReactClient, ConvexProvider } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import type { Route } from "./+types/root";
@@ -25,12 +24,13 @@ const convex = isFeatureEnabled('convex') && config.services.convex?.url
   : null;
 
 export async function loader(args: Route.LoaderArgs) {
-  // Only use Clerk auth loader if auth is enabled
   if (isFeatureEnabled('auth') && isServiceEnabled('clerk')) {
-  return rootAuthLoader(args);
+    const { rootAuthLoader } = await import("@clerk/react-router/ssr.server");
+    return rootAuthLoader(args);
   }
   return {};
 }
+
 export const links: Route.LinksFunction = () => [
   // DNS prefetch for external services
   { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
@@ -55,9 +55,9 @@ export const links: Route.LinksFunction = () => [
   // Preload critical assets
   {
     rel: "preload",
-    href: "/rsk.png",
+    href: "/kaizen.png",
     as: "image",
-    type: "image/png",
+    type: "image/jpg",
   },
   {
     rel: "preload",

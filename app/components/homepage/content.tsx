@@ -12,7 +12,7 @@ export default function ContentSection() {
           </h2>
           <div className="space-y-6">
             <p>
-              Stop rebuilding the same foundation over and over. RSK eliminates
+              Stop rebuilding the same foundation over and over. Kaizen eliminates
               months of integration work by providing a complete,
               production-ready SaaS template with authentication, payments, and
               real-time data working seamlessly out of the box.{" "}

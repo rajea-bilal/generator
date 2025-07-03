@@ -59,34 +59,16 @@ export default function IntegrationsSection({
                 </IntegrationCard>
               </div>
             </div>
-            <div className="mx-auto mt-6 max-w-lg space-y-6 text-center sm:mt-0 sm:text-left">
-              <h2 className="text-balance text-3xl font-semibold md:text-4xl">
+            <div className="mx-auto mt-6 max-w-2xl space-y-6 text-center sm:mt-0 sm:text-left">
+              {/* <h2 className="text-balance text-3xl font-semibold md:text-4xl">
                 Kaizen
-              </h2>
-              <p className="text-muted-foreground">
-                This powerful starter kit is designed to help you launch your
+              </h2> */}
+              <p className="text-muted-foreground text-xl">
+                Designed to help you launch your
                 SAAS application quickly and efficiently.
               </p>
 
-              <div className="flex gap-3">
-                <Button size="sm" asChild>
-                  <Link
-                    to={
-                      loaderData?.isSignedIn
-                        ? loaderData?.hasActiveSubscription
-                          ? "/dashboard"
-                          : "/pricing"
-                        : "/sign-up"
-                    }
-                    prefetch="viewport"
-                  >
-                    {loaderData?.isSignedIn
-                      ? loaderData?.hasActiveSubscription
-                        ? "Go to Dashboard (Demo)"
-                        : "Subscribe Now (Demo)"
-                      : "Get Started (Demo)"}
-                  </Link>
-                </Button>
+              <div className="flex">
                 <Button variant="outline" size="sm" asChild>
                   <Link
                     to="https://github.com/ObaidUr-Rahmaan/kaizen"

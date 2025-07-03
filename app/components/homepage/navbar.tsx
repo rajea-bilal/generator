@@ -9,9 +9,9 @@ import { config, isFeatureEnabled } from "../../../config";
 
 const getMenuItems = () => {
   const items = [
-    { name: "Home", href: "#hero" },
-    { name: "Features", href: "#features" },
-    { name: "Team", href: "#team" },
+  { name: "Home", href: "#hero" },
+  { name: "Features", href: "#features" },
+  { name: "Team", href: "#team" },
   ];
 
   // Only show pricing if payments are enabled
@@ -79,7 +79,7 @@ export const Navbar = ({
   const dashboardLink = !authEnabled 
     ? "/dashboard" 
     : !loaderData?.isSignedIn 
-      ? "/sign-up" 
+    ? "/sign-up" 
       : loaderData.hasActiveSubscription || !paymentsEnabled 
         ? "/dashboard" 
         : "/pricing";
@@ -87,7 +87,7 @@ export const Navbar = ({
   const dashboardText = !authEnabled 
     ? "Get Started"
     : !loaderData?.isSignedIn 
-      ? "Get Started (Demo)"
+    ? "Get Started"
       : loaderData.hasActiveSubscription || !paymentsEnabled 
         ? "Dashboard" 
         : "Subscribe";
@@ -106,18 +106,18 @@ export const Navbar = ({
           )}
         >
           {/* Temporary debug indicator */}
-          <div className="absolute top-0 left-0 bg-red-500 text-white px-2 py-1 text-xs z-10">
+          {/* <div className="absolute top-0 left-0 bg-red-500 text-white px-2 py-1 text-xs z-10">
             Debug: {isScrolled ? 'SCROLLED' : 'NOT SCROLLED'}
-          </div>
+          </div> */}
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
             <div className="flex w-full justify-between lg:w-auto">
               <Link
                 to="/"
                 aria-label="home"
-                className="flex items-center space-x-2 font-semibold text-xl"
+                className="flex items-center space-x-2 font-semibold text-xl text-muted-foreground"
                 prefetch="viewport"
               >
-                <img src="/rsk.png" alt="RSK Logo" className="h-12 w-12" />
+                Kaizen 改善
               </Link>
 
               <button

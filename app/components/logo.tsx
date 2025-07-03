@@ -46,7 +46,12 @@ export const LogoIcon = ({
   className?: string;
   uniColor?: boolean;
 }) => {
-  return <img src="/rsk.png" className="w-12 h-12" />;
+  return (
+    <img
+      src="/kaizen.png"
+      className={cn("!w-16 !h-16", className)}
+    />
+  );
 };
 
 export const LogoStroke = ({ className }: { className?: string }) => {

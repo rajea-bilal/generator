@@ -1,4 +1,4 @@
-# Kaizen
+# Kaizen 改善
 
 A modern, production-ready SaaS starter template for building full-stack React applications using React Router v7, Convex, Clerk, and Polar.sh. Ready for Vercel deployment with built-in AI chat capabilities.
 
