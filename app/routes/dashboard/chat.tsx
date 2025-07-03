@@ -5,13 +5,41 @@ import Markdown from "react-markdown";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
+import { isFeatureEnabled, config } from "../../../config";
 
-const CONVEX_SITE_URL = import.meta.env.VITE_CONVEX_URL!.replace(
+export default function Chat() {
+  // Early return if chat is not enabled
+  if (!config.ui.showChat || !isFeatureEnabled('convex')) {
+    return (
+      <div className="flex flex-col w-full py-24 justify-center items-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-semibold">Chat Not Available</h2>
+          <p className="text-muted-foreground">
+            Chat functionality is currently disabled or requires backend services.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Safe access to environment variables only when needed
+  const CONVEX_SITE_URL = config.services.convex?.url?.replace(
   /.cloud$/,
   ".site"
 );
 
-export default function Chat() {
+  if (!CONVEX_SITE_URL) {
+    return (
+      <div className="flex flex-col w-full py-24 justify-center items-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-semibold">Chat Configuration Error</h2>
+          <p className="text-muted-foreground">
+            Chat functionality requires proper backend configuration.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
     useChat({
       maxSteps: 10,

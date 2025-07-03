@@ -14,8 +14,37 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { api } from "../../convex/_generated/api";
+import { isFeatureEnabled, config } from "../../config";
 
 export default function IntegratedPricing() {
+  // Early return if payments are not enabled
+  if (!isFeatureEnabled('payments') || !config.ui.showPricing) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen px-4">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-semibold">Pricing Not Available</h2>
+          <p className="text-muted-foreground">
+            Pricing functionality is currently disabled.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Early return if convex is not enabled (needed for subscription management)
+  if (!isFeatureEnabled('convex')) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen px-4">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-semibold">Service Unavailable</h2>
+          <p className="text-muted-foreground">
+            Pricing functionality requires backend services.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const { isSignedIn, userId } = useAuth();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const [plans, setPlans] = useState<any>(null);

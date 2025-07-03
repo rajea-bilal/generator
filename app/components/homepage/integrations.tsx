@@ -61,7 +61,7 @@ export default function IntegrationsSection({
             </div>
             <div className="mx-auto mt-6 max-w-lg space-y-6 text-center sm:mt-0 sm:text-left">
               <h2 className="text-balance text-3xl font-semibold md:text-4xl">
-                React Starter Kit
+                Kaizen
               </h2>
               <p className="text-muted-foreground">
                 This powerful starter kit is designed to help you launch your

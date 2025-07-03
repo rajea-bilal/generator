@@ -1,27 +1,64 @@
-# Testing Locally Guide
+# Testing Locally
 
-This guide will walk you through setting up the project for local development and testing.
+This guide walks you through setting up Kaizen for local development based on your chosen configuration.
 
-**Date:** June 2025
+## 🔧 Before You Start: Configuration Check
 
-## Prerequisites
+**IMPORTANT**: Before following this guide, make sure you've configured your `config.ts` file with the features you want:
 
-- [Node.js](https://nodejs.org/) (v18 or later)
-- [npm](https://www.npmjs.com/)
-- [ngrok](https://ngrok.com/) or similar tunnel service (for testing webhooks)
-
-## Step 1: Installation
-
-1. Clone the repository and install dependencies:
-```bash
-git clone <repository-url>
-cd <repository-name>
-npm install --legacy-peer-deps --force
+```typescript
+// config.ts
+export const config: AppConfig = {
+  features: {
+    auth: true,        // Do you want user authentication?
+    payments: true,    // Do you want subscription billing?
+    convex: true,      // Do you want backend database?
+    email: false,      // Email (not implemented yet)
+  },
+  // ... rest of config
+};
 ```
 
-Note: We use `--legacy-peer-deps` because some packages might have React 18 peer dependencies while we're using React 19.
+## 🎯 Quick Setup Paths
 
-## Step 2: Set Up Convex
+Choose your path based on your configuration:
+
+- **🚀 Full SaaS** (`auth: true, payments: true, convex: true`): Follow all steps
+- **🌐 Frontend Only** (`auth: false, payments: false, convex: false`): Jump to [Step 8](#step-8-start-the-development-server)  
+- **👤 Auth-Only** (`auth: true, payments: false, convex: true`): Skip steps 6-8, do steps 1-5 only
+- **💳 Payments-Only** (`auth: false, payments: true, convex: true`): Skip steps 4-5, do others
+
+## ⚠️ Expected Errors by Configuration
+
+**Don't panic!** Based on your configuration, you might see these errors initially:
+
+| Configuration | Expected Errors (Normal!) | Action |
+|---------------|---------------------------|---------|
+| **Frontend Only** | None! Should work immediately | None needed |
+| **No Convex** | "No address provided to convex react client" | Ignore - you disabled convex |
+| **No Auth** | No Clerk-related errors | Skip Clerk setup |
+| **No Payments** | "Cannot find function subscriptions:getAvailablePlans" | Ignore - you disabled payments |
+| **Full SaaS** | All errors until setup complete | Follow all steps |
+
+---
+
+## Step 1: Install Dependencies
+
+```bash
+npm install --legacy-peer-deps
+```
+
+## Step 2: Start Development Server (Test Configuration)
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:5173` to see what errors you get. This helps you understand what needs setup based on your configuration.
+
+## Step 3: Set Up Convex (If convex: true)
+
+**Skip this step if you set `convex: false` in your config**
 
 1. Open a new terminal and run:
 ```bash
@@ -32,7 +69,9 @@ npx convex dev
 3. Create a new project when prompted
 4. This will automatically add your Convex URL to `.env.local`
 
-## Step 3: Set Up Clerk
+## Step 4: Set Up Clerk (If auth: true)
+
+**Skip this step if you disabled auth in config**
 
 1. Go to [Clerk Dashboard](https://dashboard.clerk.dev/)
 2. Create a new application
@@ -44,7 +83,9 @@ VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 ```
 
-## Step 4: Configure Clerk-Convex Integration
+## Step 5: Configure Clerk-Convex Integration (If both auth and convex: true)
+
+**Skip this step if you disabled auth or convex**
 
 1. In Clerk Dashboard:
    - Go to JWT Templates
@@ -58,7 +99,9 @@ CLERK_SECRET_KEY=sk_test_...
    - Go to Settings > Environment Variables
    - Add `VITE_CLERK_FRONTEND_API_URL` and set it to the Issuer URL from Clerk
 
-## Step 5: Set Up Polar (Payments)
+## Step 6: Set Up Polar (If payments: true)
+
+**Skip this step if you disabled payments in config**
 
 1. Go to [sandbox.polar.sh](https://sandbox.polar.sh)
 2. Create a new organization
@@ -70,9 +113,15 @@ CLERK_SECRET_KEY=sk_test_...
 POLAR_ACCESS_TOKEN=<your-access-token>
 POLAR_ORGANIZATION_ID=<your-org-id>
 POLAR_WEBHOOK_SECRET=<your-webhook-secret>
+
+# Feature flags (automatically set by config system, but you can set manually)
+PAYMENTS_ENABLED=true
+EMAIL_ENABLED=false
 ```
 
-## Step 6: Configure Webhooks
+## Step 7: Configure Webhooks (If payments: true)
+
+**Skip this step if you disabled payments in config**
 
 1. Get your Convex HTTP URL from the Convex dashboard
 2. In Polar Dashboard:
@@ -83,7 +132,9 @@ POLAR_WEBHOOK_SECRET=<your-webhook-secret>
    - Select all event types
    - Click Create
 
-## Step 7: Set Up Tunnel for Local Testing
+## Step 8: Set Up Tunnel for Local Testing (If payments: true)
+
+**Skip this step if you disabled payments in config**
 
 Since Polar needs to reach your local environment for webhooks, set up a tunnel:
 
@@ -107,8 +158,9 @@ server: {
 }
 ```
 
-## Step 8: Start the Development Server
+## Step 9: Start the Development Server
 
+### For Configurations WITH Convex:
 1. In one terminal, keep Convex running:
 ```bash
 npx convex dev
@@ -119,52 +171,114 @@ npx convex dev
 npm run dev
 ```
 
-Your app should now be running at `http://localhost:5173` and accessible via your ngrok URL for webhook testing.
+### For Configurations WITHOUT Convex:
+Just start the frontend:
+```bash
+npm run dev
+```
 
-## Environment Variables Summary
+Your app should now be running at `http://localhost:5173`.
 
-Here's a complete list of environment variables needed:
+## Environment Variables Summary by Configuration
 
+### Simple Frontend (No Backend)
 ```env
-# Company & Email Configuration
-COMPANY_NAME="Your Company Name"
-DEFAULT_FROM_EMAIL="noreply@yourdomain.com"
+# No environment variables needed!
+```
 
-# Frontend Configuration
-FRONTEND_URL="http://localhost:5173"
-
-# OpenAI
-OPENAI_API_KEY="sk-..."
-
-# Clerk
+### Auth-Only Configuration
+```env
+# Clerk Authentication
 VITE_CLERK_PUBLISHABLE_KEY="pk_test_..."
 CLERK_SECRET_KEY="sk_test_..."
 
-# Convex
+# Convex Backend
 CONVEX_DEPLOYMENT="..."
-CONVEX_URL="..."
+VITE_CONVEX_URL="..."
 
-# Polar
+# OpenAI (optional)
+OPENAI_API_KEY="sk-..."
+```
+
+### Full SaaS Configuration
+```env
+# Clerk Authentication
+VITE_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
+
+# Convex Backend
+CONVEX_DEPLOYMENT="..."
+VITE_CONVEX_URL="..."
+
+# Polar Payments
 POLAR_ACCESS_TOKEN="..."
 POLAR_ORGANIZATION_ID="..."
 POLAR_WEBHOOK_SECRET="..."
 
-# Resend
-RESEND_API_KEY="re_..."
+# OpenAI Chat
+OPENAI_API_KEY="sk-..."
+
+# Frontend URL (for webhooks)
+FRONTEND_URL="http://localhost:5173"
 ```
 
-## Testing the Setup
+## Testing Different Configurations
 
-1. Visit your local URL
-2. Try logging in with Clerk
-3. Test the subscription flow with Polar's test card:
-   - Card number: 4242 4242 4242 4242
+### Simple Frontend
+1. Visit `http://localhost:5173`
+2. Navigate through the demo dashboard
+3. No authentication or payment flows
+
+### Auth-Only
+1. Visit `http://localhost:5173`
+2. Click "Sign Up" to create an account
+3. Test the dashboard and chat functionality
+4. No payment flows
+
+### Full SaaS
+1. Visit `http://localhost:5173`
+2. Test the complete user flow:
+   - Sign up
+   - View pricing
+   - Subscribe with test card:
+     - Card: 4242 4242 4242 4242
    - Any future expiry date
    - Any CVC
-   - Any billing information
+   - Access dashboard
+   - Use chat functionality
+
+## Configuration Validation
+
+The app will automatically validate your configuration on startup. Check the console for:
+
+✅ **Valid configuration:**
+```
+🔧 App Configuration:
+   Features: auth, payments, convex
+   Services: clerk, polar, convex, openai
+```
+
+❌ **Invalid configuration:**
+```
+⚠️  Configuration validation failed:
+   - VITE_CLERK_PUBLISHABLE_KEY is required when auth is enabled
+   - POLAR_ACCESS_TOKEN is required when payments are enabled
+```
 
 ## Troubleshooting
 
-- If you see "No address provided to convex react client", check your environment variables
-- If Polar webhooks aren't working, ensure your ngrok URL is correct and the webhook is properly configured
-- If you get React version conflicts, make sure you used `--legacy-peer-deps` during installation 
+### Configuration Issues
+- **"Configuration validation failed"**: Add missing environment variables
+- **"Service not available"**: Check feature flags in `config.ts`
+- **Components not showing**: Verify UI flags in config
+
+### Service-Specific Issues
+- **"No address provided to convex react client"**: Convex is enabled but URL missing
+- **Auth not working**: Check Clerk environment variables
+- **Payments failing**: Verify Polar webhook configuration
+- **Chat not available**: OpenAI API key missing or Convex disabled
+
+### Development Issues
+- **React version conflicts**: Use `--legacy-peer-deps` during installation
+- **Build errors**: Run `npm run typecheck` to identify TypeScript issues
+- **Webhook testing**: Ensure ngrok tunnel is running and properly configured 

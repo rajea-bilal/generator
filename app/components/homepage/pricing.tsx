@@ -12,8 +12,14 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { api } from "../../../convex/_generated/api";
+import { isFeatureEnabled, config } from "../../../config";
 
 export default function Pricing({ loaderData }: { loaderData: any }) {
+  // Early return if payments are not enabled
+  if (!isFeatureEnabled('payments') || !config.ui.showPricing) {
+    return null;
+  }
+
   const { isSignedIn } = useAuth();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

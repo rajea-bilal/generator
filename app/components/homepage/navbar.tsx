@@ -1,17 +1,26 @@
 "use client";
 import { UserButton } from "@clerk/react-router";
-import { Github, Menu, X, Loader2 } from "lucide-react";
+import { Github, Menu, X } from "lucide-react";
 import React, { useCallback } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
+import { config, isFeatureEnabled } from "../../../config";
 
-const menuItems = [
-  { name: "Home", href: "#hero" },
-  { name: "Features", href: "#features" },
-  { name: "Team", href: "#team" },
-  { name: "Pricing", href: "#pricing" },
-];
+const getMenuItems = () => {
+  const items = [
+    { name: "Home", href: "#hero" },
+    { name: "Features", href: "#features" },
+    { name: "Team", href: "#team" },
+  ];
+
+  // Only show pricing if payments are enabled
+  if (isFeatureEnabled('payments') && config.ui.showPricing) {
+    items.push({ name: "Pricing", href: "#pricing" });
+  }
+
+  return items;
+};
 
 export const Navbar = ({
   loaderData,
@@ -20,15 +29,34 @@ export const Navbar = ({
 }) => {
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
-  const [isDashboardLoading, setIsDashboardLoading] = React.useState(false);
-  const navigate = useNavigate();
+  const menuItems = getMenuItems();
 
   React.useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const scrolled = scrollY > 1; // Even lower threshold - any scroll at all
+      console.log('Multiple scroll checks:', {
+        windowScrollY: window.scrollY,
+        documentScrollTop: document.documentElement.scrollTop,
+        bodyScrollTop: document.body.scrollTop,
+        pageYOffset: window.pageYOffset,
+        finalScrollY: scrollY,
+        isScrolled: scrolled
+      });
+      setIsScrolled(scrolled);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    
+    // Set initial scroll state
+    handleScroll();
+    
+    // Add multiple event listeners for better compatibility
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    document.addEventListener("scroll", handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const handleNavClick = useCallback((href: string) => {
@@ -45,31 +73,42 @@ export const Navbar = ({
   }, []);
 
   // Simple computations don't need useMemo
-  const dashboardLink = !loaderData?.isSignedIn 
-    ? "/sign-up" 
-    : loaderData.hasActiveSubscription ? "/dashboard" : "/pricing";
+  const authEnabled = isFeatureEnabled('auth') && config.ui.showAuth;
+  const paymentsEnabled = isFeatureEnabled('payments') && config.ui.showPricing;
+  
+  const dashboardLink = !authEnabled 
+    ? "/dashboard" 
+    : !loaderData?.isSignedIn 
+      ? "/sign-up" 
+      : loaderData.hasActiveSubscription || !paymentsEnabled 
+        ? "/dashboard" 
+        : "/pricing";
 
-  const dashboardText = !loaderData?.isSignedIn 
-    ? "Get Started (Demo)"
-    : loaderData.hasActiveSubscription ? "Dashboard" : "Subscribe";
+  const dashboardText = !authEnabled 
+    ? "Get Started"
+    : !loaderData?.isSignedIn 
+      ? "Get Started (Demo)"
+      : loaderData.hasActiveSubscription || !paymentsEnabled 
+        ? "Dashboard" 
+        : "Subscribe";
 
-  const handleDashboardClick = useCallback(() => {
-    setIsDashboardLoading(true);
-    navigate(dashboardLink);
-  }, [navigate, dashboardLink]);
   return (
     <header>
       <nav
         data-state={menuState && "active"}
-        className="fixed z-99 w-full px-2"
+        className="fixed z-50 w-full px-2"
       >
         <div
           className={cn(
             "mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12",
             isScrolled &&
-              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5"
+              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5 shadow-lg"
           )}
         >
+          {/* Temporary debug indicator */}
+          <div className="absolute top-0 left-0 bg-red-500 text-white px-2 py-1 text-xs z-10">
+            Debug: {isScrolled ? 'SCROLLED' : 'NOT SCROLLED'}
+          </div>
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
             <div className="flex w-full justify-between lg:w-auto">
               <Link
@@ -130,25 +169,16 @@ export const Navbar = ({
                 >
                   <Github className="w-5 h-5" />
                 </Link>
-                {loaderData?.isSignedIn ? (
+                {authEnabled && loaderData?.isSignedIn ? (
                   <div className="flex items-center gap-3">
-                    <Button 
-                      size="sm" 
-                      onClick={handleDashboardClick}
-                      disabled={isDashboardLoading}
-                    >
-                      {isDashboardLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Loading...
-                        </>
-                      ) : (
+                    <Button asChild size="sm">
+                      <Link to={dashboardLink} prefetch="viewport">
                         <span>{dashboardText}</span>
-                      )}
+                      </Link>
                     </Button>
                     <UserButton />
                   </div>
-                ) : (
+                ) : authEnabled ? (
                   <>
                     <Button
                       asChild
@@ -170,21 +200,25 @@ export const Navbar = ({
                       </Link>
                     </Button>
                     <Button
+                      asChild
                       size="sm"
                       className={cn(isScrolled ? "lg:inline-flex" : "hidden")}
-                      onClick={handleDashboardClick}
-                      disabled={isDashboardLoading}
                     >
-                      {isDashboardLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Loading...
-                        </>
-                      ) : (
+                      <Link to={dashboardLink} prefetch="viewport">
                         <span>{dashboardText}</span>
-                      )}
+                      </Link>
                     </Button>
                   </>
+                ) : (
+                  // When auth is disabled, show a simple get started button
+                  <Button
+                    asChild
+                    size="sm"
+                  >
+                    <Link to={dashboardLink} prefetch="viewport">
+                      <span>{dashboardText}</span>
+                    </Link>
+                  </Button>
                 )}
               </div>
             </div>

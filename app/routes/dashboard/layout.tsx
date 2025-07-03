@@ -1,40 +1,56 @@
 import { getAuth } from "@clerk/react-router/ssr.server";
-import { fetchQuery } from "convex/nextjs";
 import { redirect, useLoaderData } from "react-router";
 import { AppSidebar } from "~/components/dashboard/app-sidebar";
 import { SiteHeader } from "~/components/dashboard/site-header";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
-import { api } from "../../../convex/_generated/api";
 import type { Route } from "./+types/layout";
 import { createClerkClient } from "@clerk/react-router/api.server";
 import { Outlet } from "react-router";
+import { isFeatureEnabled, isServiceEnabled, config } from "../../../config";
 
 export async function loader(args: Route.LoaderArgs) {
-  const { userId } = await getAuth(args);
+  const authEnabled = isFeatureEnabled('auth') && isServiceEnabled('clerk');
+  const paymentsEnabled = isFeatureEnabled('payments');
+  const convexEnabled = isFeatureEnabled('convex');
+
+  let userId: string | null = null;
+  let user: any = null;
+
+  // Handle authentication if enabled
+  if (authEnabled) {
+    const auth = await getAuth(args);
+    userId = auth.userId;
 
   // Redirect to sign-in if not authenticated
   if (!userId) {
     throw redirect("/sign-in");
   }
 
-  // Parallel data fetching to reduce waterfall
-  const [subscriptionStatus, user] = await Promise.all([
-    fetchQuery(api.subscriptions.checkUserSubscriptionStatus, { userId }),
-    createClerkClient({
+    // Get user data if auth is enabled
+    user = await createClerkClient({
       secretKey: process.env.CLERK_SECRET_KEY,
-    }).users.getUser(userId)
-  ]);
+    }).users.getUser(userId);
+  }
+
+  // Handle subscription check if payments are enabled
+  if (paymentsEnabled && convexEnabled && userId) {
+    // Dynamic import to avoid loading Convex when not needed
+    const { fetchQuery } = await import("convex/nextjs");
+    const { api } = await import("../../../convex/_generated/api");
+    
+    const subscriptionStatus = await fetchQuery(api.subscriptions.checkUserSubscriptionStatus, { userId });
 
   // Redirect to subscription-required if no active subscription
   if (!subscriptionStatus?.hasActiveSubscription) {
     throw redirect("/subscription-required");
+    }
   }
 
-  return { user };
+  return { user, authEnabled, paymentsEnabled };
 }
 
 export default function DashboardLayout() {
-  const { user } = useLoaderData();
+  const { user, authEnabled } = useLoaderData();
 
   return (
     <SidebarProvider

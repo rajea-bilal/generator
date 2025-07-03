@@ -40,11 +40,63 @@ A modern, production-ready SaaS starter template for building full-stack React a
 - **TypeScript** - Type safety
 - **Vercel** - Deployment platform
 
+## Configuration
+
+**🔧 Flexible Configuration System** - Enable/disable features based on your needs!
+
+Kaizen includes a powerful configuration system that allows you to easily enable or disable major features:
+
+- **Authentication** (Clerk)
+- **Payments** (Polar.sh)
+- **Backend** (Convex)
+- **Email** (Plunk - coming soon)
+- **AI Chat** (OpenAI)
+
+### Quick Start Configurations
+
+**1. Full SaaS App (Default)**
+```typescript
+// config.ts
+features: {
+  auth: true,
+  payments: true,
+  convex: true,
+  email: false,
+}
+```
+
+**2. Simple Frontend App**
+```typescript
+// config.ts
+features: {
+  auth: false,
+  payments: false,
+  convex: false,
+  email: false,
+}
+```
+
+**3. Auth-Only App**
+```typescript
+// config.ts
+features: {
+  auth: true,
+  payments: false,
+  convex: true,
+  email: false,
+}
+```
+
+See `config.example.ts` for more configuration examples.
+
 ## Getting Started
 
 ### Prerequisites
 
+**Required for all configurations:**
 - Node.js 18+ 
+
+**Optional (based on enabled features):**
 - Clerk account for authentication
 - Convex account for database
 - Polar.sh account for subscriptions
@@ -58,54 +110,81 @@ A modern, production-ready SaaS starter template for building full-stack React a
 npm install --legacy-peer-deps
 ```
 
-2. Copy the environment file and configure your credentials:
+2. **⚠️ IMPORTANT: Configure your features FIRST** in `config.ts`:
+
+Edit the feature flags to match your needs:
+
+```typescript
+export const config: AppConfig = {
+  features: {
+    auth: true,        // Enable/disable Clerk authentication
+    payments: true,    // Enable/disable Polar.sh payments
+    convex: true,      // Enable/disable Convex backend
+    email: false,      // Enable/disable Plunk email
+  },
+  // ... rest of config
+};
+```
+
+**Choose one of these common configurations:**
+- **Full SaaS**: `auth: true, payments: true, convex: true` (like in the tutorial)
+- **Frontend Only**: `auth: false, payments: false, convex: false` (static site)
+- **Auth Only**: `auth: true, payments: false, convex: true` (user management)
+
+3. Copy the environment file and configure your credentials:
 
 ```bash
 cp .env.example .env.local
 ```
 
-3. Set up your environment variables in `.env.local`:
+4. **Set up your environment variables** in `.env.local` (only for enabled features):
 
+### If you enabled convex: true
 ```bash
-# Convex Configuration
+# Run this command first:
+npx convex dev
+
+# This will automatically add to .env.local:
 CONVEX_DEPLOYMENT=your_convex_deployment_here
 VITE_CONVEX_URL=your_convex_url_here
+```
 
-# Clerk Authentication
+### If you enabled auth: true
+```bash
+# Get these from Clerk Dashboard:
 VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
 CLERK_SECRET_KEY=your_clerk_secret_key_here
+```
 
-# Polar.sh Configuration
+### If you enabled payments: true
+```bash
+# Get these from Polar Dashboard:
 POLAR_ACCESS_TOKEN=your_polar_access_token_here
 POLAR_ORGANIZATION_ID=your_polar_organization_id_here
 POLAR_WEBHOOK_SECRET=your_polar_webhook_secret_here
-
-# OpenAI Configuration (for AI chat)
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Frontend URL for redirects
-FRONTEND_URL=http://localhost:5173
 ```
 
-4. Initialize Convex:
-
+### If you want AI chat (requires convex: true)
 ```bash
-npx convex dev
+# Get this from OpenAI:
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-5. Set up your Polar.sh webhook endpoint:
-   - URL: `{your_domain}/webhook/polar`
-   - Events: All subscription events
+### Always required for production
+```bash
+# Your deployed frontend URL:
+FRONTEND_URL=http://localhost:5173  # for development
+```
 
-### Development
+5. **Follow the detailed setup guide** based on your configuration:
+   - See `guides/testing-locally.md` for step-by-step instructions
+   - The guide will tell you which steps to skip based on your config
 
-Start the development server with HMR:
+6. Start the development server:
 
 ```bash
 npm run dev
 ```
-
-Your application will be available at `http://localhost:5173`.
 
 ## Building for Production
 

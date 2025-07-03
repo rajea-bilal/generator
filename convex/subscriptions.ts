@@ -15,6 +15,12 @@ const createCheckout = async ({
   successUrl: string;
   metadata?: Record<string, string>;
 }) => {
+  // Check if payments are enabled
+  const isPaymentsEnabled = process.env.PAYMENTS_ENABLED === 'true';
+  if (!isPaymentsEnabled) {
+    throw new Error("Payments are not enabled in the current configuration");
+  }
+
   if (!process.env.POLAR_ACCESS_TOKEN) {
     throw new Error("POLAR_ACCESS_TOKEN is not configured");
   }
@@ -439,6 +445,17 @@ const validateEvent = (
 
 export const paymentWebhook = httpAction(async (ctx, request) => {
   try {
+    // Check if payments are enabled
+    const isPaymentsEnabled = process.env.PAYMENTS_ENABLED === 'true';
+    if (!isPaymentsEnabled) {
+      return new Response(JSON.stringify({ message: "Payments not enabled" }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }
+
     const rawBody = await request.text();
 
     // Internally validateEvent uses headers as a dictionary e.g. headers["webhook-id"]
