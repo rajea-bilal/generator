@@ -64,8 +64,11 @@ export default function IntegrationsSection({
                 Kaizen
               </h2> */}
               <p className="text-muted-foreground text-xl">
-                Designed to help you launch your
-                SAAS application quickly and efficiently.
+                Build fast, iterate faster.
+              </p>
+
+              <p className="text-muted-foreground text-xl">
+                Built for speed with type-safety at its core, so you ship faster, always.
               </p>
 
               <div className="flex">

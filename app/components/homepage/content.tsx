@@ -4,25 +4,29 @@ import { Link } from "react-router";
 
 export default function ContentSection() {
   return (
-    <section id="features" className="py-16 md:py-32">
+    <section id="content" className="py-16 md:py-32">
       <div className="mx-auto max-w-5xl px-6">
         <div className="grid gap-6 md:grid-cols-2 md:gap-12">
           <h2 className="text-4xl font-medium">
-            The Starter Kit you need to start your SaaS application.
+            Type-safe, AI-friendly codebase.
           </h2>
           <div className="space-y-6">
             <p>
-              Stop rebuilding the same foundation over and over. Kaizen eliminates
-              months of integration work by providing a complete,
-              production-ready SaaS template with authentication, payments, and
-              real-time data working seamlessly out of the box.{" "}
+              Kaizen is built end-to-end in TypeScript, so every prop, query and
+              mutation is fully typed <em>across</em> the stack. Autocomplete
+              just works and refactors are painless.
             </p>
             <p>
-              <span className="font-bold">From idea to launch in weeks,</span>{" "}
-              not months. With TypeScript safety, modern UI components, and
-              scalable architecture built-in, you can validate your business
-              concept and start generating revenue while your competitors are
-              still setting up their development environment.{" "}
+              Powered by <span className="font-bold">Convex</span>, your entire
+              backend—database, storage, cron jobs, and auth hooks—is expressed
+              as plain code. No YAML, no dashboards, no hidden state.
+              Large-language models can read the source tree and generate new
+              backend logic in seconds, giving you accurate scaffolds for any
+              use-case without bolting on extra services.
+            </p>
+            <p>
+              <span className="font-bold">One repo, one language.</span> Zero
+              third-party glue.
             </p>
             <Button
               asChild

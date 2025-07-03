@@ -11,7 +11,6 @@ const getMenuItems = () => {
   const items = [
   { name: "Home", href: "#hero" },
   { name: "Features", href: "#features" },
-  { name: "Team", href: "#team" },
   ];
 
   // Only show pricing if payments are enabled

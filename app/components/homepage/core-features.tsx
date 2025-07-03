@@ -35,7 +35,7 @@ export default function CoreFeaturesSection() {
     },
   ];
   return (
-    <section id="core-features" className="py-16 md:py-32">
+    <section id="features" className="py-16 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
         <h3 className="text-center text-xl font-medium mb-12 text-muted-foreground">
           Everything works together seamlessly.
