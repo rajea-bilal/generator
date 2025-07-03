@@ -1,5 +1,5 @@
 import { CpuArchitecture } from "~/components/ui/cpu-architecture";
-import { Box, Check, CreditCard, Lock, PieChart, Zap } from "lucide-react";
+import { Box, Check, CreditCard, Lock, PieChart, Zap, Mail } from "lucide-react";
 
 export default function CoreFeaturesSection() {
   const features = [
@@ -19,9 +19,9 @@ export default function CoreFeaturesSection() {
       description: "Convex database with live queries & mutations.",
     },
     {
-      icon: <PieChart className="size-5 text-primary" />,
-      title: "Analytics",
-      description: "Built-in charts & metrics dashboards.",
+      icon: <Mail className="size-5 text-primary" />,
+      title: "Emails",
+      description: "Transactional & marketing emails with Plunk.",
     },
     {
       icon: <Box className="size-5 text-primary" />,

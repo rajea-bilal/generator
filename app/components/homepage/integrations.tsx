@@ -6,7 +6,7 @@ import {
   Polar,
   ReactIcon,
   ReactRouter,
-  TailwindIcon,
+  Plunk,
   Typescript,
 } from "~/components/logos";
 import { Button } from "~/components/ui/button";
@@ -45,7 +45,7 @@ export default function IntegrationsSection({
                   <LogoIcon />
                 </IntegrationCard>
                 <IntegrationCard>
-                  <TailwindIcon />
+                  <Plunk />
                 </IntegrationCard>
               </div>
 
@@ -68,7 +68,7 @@ export default function IntegrationsSection({
               </p>
 
               <p className="text-muted-foreground text-xl">
-                Built for speed with type-safety at its core, so you ship faster, always.
+                Built for speed with type-safety at its core, so you stay shipping fast, always.
               </p>
 
               <div className="flex justify-center sm:justify-start">
