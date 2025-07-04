@@ -22,6 +22,22 @@ export default function IntegrationsSection({
     <section id="hero">
       <Navbar loaderData={loaderData} />
       <div className="bg-muted dark:bg-background py-24 md:py-32">
+        <div className="flex justify-center mb-8">
+          <Link
+            to="https://codeandcreed.tech"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full px-4 py-2 shadow-sm"
+          >
+            <div className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </div>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Powering Code&Creed Startups
+            </span>
+          </Link>
+        </div>
         <div className="mx-auto max-w-5xl px-6 mt-[2rem]">
           <div className="grid items-center sm:grid-cols-2">
             <div className="dark:bg-muted/50 relative mx-auto w-fit">
@@ -64,11 +80,7 @@ export default function IntegrationsSection({
                 Kaizen
               </h2>
               <p className="text-muted-foreground text-3xl">
-                Build fast. Iterate faster.
-              </p>
-
-              <p className="text-muted-foreground text-xl">
-                Built for speed with type-safety, so you stay shipping fast, always.
+                Modern React Router v7 Boilerplate. Designed for speed <em>and</em> correctness.
               </p>
 
               <div className="flex gap-2 justify-center sm:justify-start">
