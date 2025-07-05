@@ -58,18 +58,13 @@ jobs:
             playwright-report/
             test-results/
       
-      - name: Comment test results on PR
-        uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            
-            // This will show test status in PR without blocking merge
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '🧪 Tests have been run. Check the Actions tab for detailed results. Tests failures won\'t block this PR from being merged.'
-            });
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "## 🧪 Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit tests: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "- E2E tests: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "- Build: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "ℹ️ **Note**: Test failures won't block PRs or deployments." >> $GITHUB_STEP_SUMMARY
+          echo "Check the detailed test results in the artifacts above." >> $GITHUB_STEP_SUMMARY
