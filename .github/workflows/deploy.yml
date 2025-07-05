@@ -1,0 +1,51 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # This job should always run regardless of test results
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_ENVIRONMENT: production
+      
+      - name: Upload source maps to Sentry
+        uses: getsentry/action-upload-sourcemaps@v2
+        if: env.SENTRY_AUTH_TOKEN
+        with:
+          authToken: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          org: ${{ secrets.SENTRY_ORG }}
+          project: ${{ secrets.SENTRY_PROJECT }}
+          release: ${{ github.sha }}
+          sourcemaps: "./dist/**/*.js.map"
+        continue-on-error: true  # Don't block deployment if source maps fail
+      
+      # Vercel will automatically deploy when changes are pushed to main
+      # This step is just for logging and notification
+      - name: Notify deployment status
+        run: |
+          echo "🚀 Build completed successfully!"
+          echo "Vercel will automatically deploy this build to production."
+          echo "Monitor deployment progress in your Vercel dashboard."
