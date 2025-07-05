@@ -24,6 +24,7 @@ export interface AppConfig {
     payments: boolean;    // Enable Polar.sh subscription billing  
     convex: boolean;      // Enable Convex real-time database
     email: boolean;       // Enable Plunk email (coming soon)
+    monitoring: boolean;  // Enable error reporting and monitoring
   };
   services: {
     clerk?: {
@@ -49,6 +50,18 @@ export interface AppConfig {
     openai?: {
       enabled: boolean;
       apiKey?: string;
+    };
+    sentry?: {
+      enabled: boolean;
+      dsn?: string;
+      tracesSampleRate?: number;
+      environment?: string;
+    };
+    openstatus?: {
+      enabled: boolean;
+      apiKey?: string;
+      projectId?: string;
+      webhookUrl?: string;
     };
   };
   ui: {
@@ -84,6 +97,7 @@ export const config: AppConfig = {
     payments: false,    // Enable/disable Polar.sh payments
     convex: false,      // Enable/disable Convex backend
     email: false,      // Enable/disable Plunk email (not yet implemented)
+    monitoring: false,  // Enable/disable error reporting and monitoring
   },
   services: {
     clerk: {
@@ -109,6 +123,18 @@ export const config: AppConfig = {
     openai: {
       enabled: false,
       apiKey: getEnvVar('OPENAI_API_KEY'),
+    },
+    sentry: {
+      enabled: false,
+      dsn: getEnvVar('VITE_SENTRY_DSN') || getEnvVar('SENTRY_DSN'),
+      tracesSampleRate: 0.2,
+      environment: getEnvVar('SENTRY_ENVIRONMENT'),
+    },
+    openstatus: {
+      enabled: false,
+      apiKey: getEnvVar('OPENSTATUS_API_KEY'),
+      projectId: getEnvVar('OPENSTATUS_PROJECT_ID'),
+      webhookUrl: getEnvVar('OPENSTATUS_WEBHOOK_URL'),
     },
   },
   ui: {
@@ -171,6 +197,12 @@ export const validateConfig = (): { valid: boolean; errors: string[] } => {
     }
   }
 
+  if (isFeatureEnabled('monitoring') && isServiceEnabled('sentry')) {
+    if (!config.services.sentry?.dsn) {
+      errors.push('SENTRY_DSN is required when monitoring is enabled');
+    }
+  }
+
   return {
     valid: errors.length === 0,
     errors,
@@ -191,12 +223,15 @@ export const syncConfigWithEnv = () => {
     process.env.EMAIL_ENABLED = isFeatureEnabled('email') ? 'true' : 'false';
     process.env.AUTH_ENABLED = isFeatureEnabled('auth') ? 'true' : 'false';
     process.env.CONVEX_ENABLED = isFeatureEnabled('convex') ? 'true' : 'false';
+    process.env.MONITORING_ENABLED = isFeatureEnabled('monitoring') ? 'true' : 'false';
     
     // Also sync service-specific flags
     process.env.CLERK_ENABLED = isServiceEnabled('clerk') ? 'true' : 'false';
     process.env.POLAR_ENABLED = isServiceEnabled('polar') ? 'true' : 'false';
     process.env.PLUNK_ENABLED = isServiceEnabled('plunk') ? 'true' : 'false';
     process.env.OPENAI_ENABLED = isServiceEnabled('openai') ? 'true' : 'false';
+    process.env.SENTRY_ENABLED = isServiceEnabled('sentry') ? 'true' : 'false';
+    process.env.OPENSTATUS_ENABLED = isServiceEnabled('openstatus') ? 'true' : 'false';
     
     if (isDevelopment) {
       console.log('🔄 Synced configuration with environment variables');
