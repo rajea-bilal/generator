@@ -4,12 +4,13 @@ This guide explains how to configure Kaizen for different use cases using the fl
 
 ## 🔧 Configuration Overview
 
-Kaizen uses a flexible configuration system that allows you to enable/disable four main features:
+Kaizen uses a flexible configuration system that allows you to enable/disable five main features:
 
 - **Authentication** (Clerk) - User login/signup, protected routes
 - **Payments** (Polar.sh) - Subscription billing, payment processing  
 - **Backend** (Convex) - Real-time database, server functions, AI chat
 - **Email** (Plunk) - Email sending (coming soon)
+- **Monitoring** (Sentry + OpenStatus) - Error reporting, uptime monitoring, alerting
 
 ## 📁 Configuration Files
 
@@ -30,6 +31,7 @@ export const config: AppConfig = {
     payments: true,    // ✅ Subscription billing
     convex: true,      // ✅ Real-time database
     email: false,      // ❌ Email (not implemented yet)
+    monitoring: true,  // ✅ Error reporting & monitoring
   },
   ui: {
     showPricing: true,    // Show pricing page
@@ -58,11 +60,23 @@ POLAR_WEBHOOK_SECRET=...
 # OpenAI Chat
 OPENAI_API_KEY=sk-...
 
+# Sentry Error Reporting
+VITE_SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_AUTH_TOKEN=your-auth-token-here
+SENTRY_ORG=your-org-slug
+SENTRY_PROJECT=kaizen-app
+
+# OpenStatus Monitoring
+OPENSTATUS_API_KEY=your-api-key-here
+OPENSTATUS_PROJECT_ID=your-project-id
+
 # Feature Flags for Convex (automatically set by the config system)
 PAYMENTS_ENABLED=true
 EMAIL_ENABLED=false
 AUTH_ENABLED=true
 CONVEX_ENABLED=true
+MONITORING_ENABLED=true
 ```
 
 ### 2. Simple Frontend App
@@ -76,6 +90,7 @@ export const config: AppConfig = {
     payments: false,   // ❌ No payments
     convex: false,     // ❌ No backend
     email: false,      // ❌ No email
+    monitoring: false, // ❌ No monitoring (or true for basic error tracking)
   },
   ui: {
     showPricing: false,   // Hide pricing
@@ -419,10 +434,62 @@ const config: AppConfig = {
 
 See `config.example.ts` for complete working examples of each configuration type.
 
+## 📊 Monitoring Configuration
+
+For detailed monitoring setup, see the [Monitoring Setup Guide](./monitoring-setup.md).
+
+### Quick Monitoring Setup
+
+```typescript
+// config.ts
+export const config: AppConfig = {
+  features: {
+    monitoring: true,  // Enable error reporting & monitoring
+  },
+  services: {
+    sentry: {
+      enabled: true,   // Enable Sentry error tracking
+    },
+    openstatus: {
+      enabled: true,   // Enable OpenStatus uptime monitoring
+    },
+  },
+};
+```
+
+**Required Environment Variables:**
+```env
+# Sentry Configuration
+VITE_SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_AUTH_TOKEN=your-auth-token-here
+SENTRY_ORG=your-org-slug
+SENTRY_PROJECT=kaizen-app
+
+# OpenStatus Configuration
+OPENSTATUS_API_KEY=your-api-key-here
+OPENSTATUS_PROJECT_ID=your-project-id
+```
+
+### Monitoring Levels
+
+1. **No Monitoring** (`monitoring: false`):
+   - No error tracking or uptime monitoring
+   - Good for: Simple static sites
+
+2. **Basic Error Tracking** (`monitoring: true`, Sentry only):
+   - Frontend and backend error reporting
+   - Good for: Applications that need error visibility
+
+3. **Full Monitoring** (`monitoring: true`, both Sentry + OpenStatus):
+   - Error tracking + uptime monitoring + alerting
+   - Good for: Production applications requiring high availability
+
 ## 🔄 Updates
 
 When updating Kaizen, check:
 1. New features added to `AppConfig` interface
 2. Changes to required environment variables
 3. Updates to validation rules
-4. New configuration examples 
+4. New configuration examples
+5. New monitoring and alerting capabilities 
