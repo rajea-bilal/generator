@@ -94,7 +94,7 @@ See `config.example.ts` for more configuration examples.
 ### Prerequisites
 
 **Required for all configurations:**
-- Node.js 18+ 
+- Node.js 20+ 
 
 **Optional (based on enabled features):**
 - Clerk account for authentication
