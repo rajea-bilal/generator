@@ -1,7 +1,7 @@
 "use client";
 import { UserButton } from "@clerk/react-router";
-import { Github, Menu, X } from "lucide-react";
-import React, { useCallback } from "react";
+import { Github, Menu, X, Loader2 } from "lucide-react";
+import React, { useCallback, useState } from "react";
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
@@ -28,6 +28,7 @@ export const Navbar = ({
 }) => {
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [isDashboardLoading, setIsDashboardLoading] = useState(false);
   const menuItems = getMenuItems();
 
   React.useEffect(() => {
@@ -63,6 +64,10 @@ export const Navbar = ({
     setMenuState(false); // Close mobile menu
   }, []);
 
+  const handleDashboardClick = useCallback(() => {
+    setIsDashboardLoading(true);
+  }, []);
+
   // Simple computations don't need useMemo
   const authEnabled = isFeatureEnabled('auth') && config.ui.showAuth;
   const paymentsEnabled = isFeatureEnabled('payments') && config.ui.showPricing;
@@ -75,13 +80,7 @@ export const Navbar = ({
         ? "/dashboard" 
         : "/pricing";
 
-  const dashboardText = !authEnabled 
-    ? "Get Started"
-    : !loaderData?.isSignedIn 
-    ? "Get Started"
-      : loaderData.hasActiveSubscription || !paymentsEnabled 
-        ? "Dashboard" 
-        : "Subscribe";
+  const dashboardText = "Dashboard";
 
   return (
     <header>
@@ -162,9 +161,19 @@ export const Navbar = ({
                 </Link>
                 {authEnabled && loaderData?.isSignedIn ? (
                   <div className="flex items-center gap-3">
-                    <Button asChild size="sm">
+                    <Button 
+                      asChild 
+                      size="sm" 
+                      disabled={isDashboardLoading}
+                      onClick={handleDashboardClick}
+                      className="min-w-[90px]"
+                    >
                       <Link to={dashboardLink} prefetch="viewport">
-                        <span>{dashboardText}</span>
+                        {isDashboardLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <span>{dashboardText}</span>
+                        )}
                       </Link>
                     </Button>
                     <UserButton />
@@ -193,10 +202,16 @@ export const Navbar = ({
                     <Button
                       asChild
                       size="sm"
-                      className={cn(isScrolled ? "lg:inline-flex" : "hidden")}
+                      className={cn(isScrolled ? "lg:inline-flex" : "hidden", "min-w-[90px]")}
+                      disabled={isDashboardLoading}
+                      onClick={handleDashboardClick}
                     >
                       <Link to={dashboardLink} prefetch="viewport">
-                        <span>{dashboardText}</span>
+                        {isDashboardLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <span>{dashboardText}</span>
+                        )}
                       </Link>
                     </Button>
                   </>
@@ -205,9 +220,16 @@ export const Navbar = ({
                   <Button
                     asChild
                     size="sm"
+                    disabled={isDashboardLoading}
+                    onClick={handleDashboardClick}
+                    className="min-w-[90px]"
                   >
                     <Link to={dashboardLink} prefetch="viewport">
-                      <span>{dashboardText}</span>
+                      {isDashboardLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <span>{dashboardText}</span>
+                      )}
                     </Link>
                   </Button>
                 )}

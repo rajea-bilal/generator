@@ -46,7 +46,6 @@ export default function CoreFeaturesSection() {
             <CpuArchitecture
               text="改善"
               className="w-full h-auto"
-              nodeLabels={features.map((f) => f.title)}
             />
           </div>
           {/* Feature list */}
