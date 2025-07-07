@@ -34,6 +34,7 @@ A modern, production-ready SaaS starter template for building full-stack React a
 - **Convex** - Real-time database and serverless functions
 - **Clerk** - Authentication and user management
 - **Polar.sh** - Subscription billing and payments
+- **Resend** - Email notifications and transactional emails
 - **OpenAI** - AI chat capabilities
 
 ### Development & Deployment
