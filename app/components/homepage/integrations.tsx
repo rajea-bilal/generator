@@ -6,9 +6,9 @@ import {
   Polar,
   ReactIcon,
   ReactRouter,
-  Plunk,
   ClerkLogo,
 } from "~/components/logos";
+import Resend from "~/components/logos/Resend";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { Navbar } from "./navbar";
@@ -61,7 +61,7 @@ export default function IntegrationsSection({
                   <LogoIcon />
                 </IntegrationCard>
                 <IntegrationCard>
-                  <Plunk />
+                  <Resend />
                 </IntegrationCard>
               </div>
 

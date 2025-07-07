@@ -1,6 +1,6 @@
 # Kaizen 改善
 
-A modern, production-ready SaaS starter template for building full-stack React applications using React Router v7, Convex, Clerk, and Polar.sh. Ready for Vercel deployment with built-in AI chat capabilities.
+A modern, production-ready SaaS starter template for building full-stack React applications using React Router v7, Convex, Clerk, Resend, and Polar.sh. Ready for Vercel deployment with built-in AI chat capabilities.
 
 ## Features
 
@@ -13,6 +13,7 @@ A modern, production-ready SaaS starter template for building full-stack React a
 - 🔐 **Authentication with Clerk** - Complete user management
 - 💳 **Subscription management with Polar.sh** - Billing and payments
 - 🗄️ **Real-time database with Convex** - Serverless backend
+- 📧 **Email with Resend** - Email notifications and transactional emails
 - 🤖 **AI Chat Integration** - OpenAI-powered chat functionality
 - 📊 **Interactive Dashboard** - User management and analytics
 - 🎯 **Webhook handling** - Payment and subscription events
@@ -49,7 +50,7 @@ Kaizen includes a powerful configuration system that allows you to easily enable
 - **Authentication** (Clerk)
 - **Payments** (Polar.sh)
 - **Backend** (Convex)
-- **Email** (Plunk - coming soon)
+- **Email** (Resend via Convex component)
 - **AI Chat** (OpenAI)
 
 ### Quick Start Configurations
@@ -120,7 +121,7 @@ export const config: AppConfig = {
     auth: true,        // Enable/disable Clerk authentication
     payments: true,    // Enable/disable Polar.sh payments
     convex: true,      // Enable/disable Convex backend
-    email: false,      // Enable/disable Plunk email
+    email: false,      // Enable/disable Resend email
   },
   // ... rest of config
 };

@@ -12,7 +12,7 @@ export const fullSaasConfig: AppConfig = {
     auth: true,
     payments: true,
     convex: true,
-    email: false,
+    email: true,
     monitoring: true,
   },
   services: {
@@ -32,9 +32,10 @@ export const fullSaasConfig: AppConfig = {
       deployment: process.env.CONVEX_DEPLOYMENT,
       url: process.env.VITE_CONVEX_URL,
     },
-    plunk: {
-      enabled: false,
-      apiKey: process.env.PLUNK_API_KEY,
+    resend: {
+      enabled: true,
+      apiKey: process.env.RESEND_API_KEY,
+      webhookSecret: process.env.RESEND_WEBHOOK_SECRET,
     },
     openai: {
       enabled: true,
@@ -62,7 +63,7 @@ export const frontendOnlyConfig: AppConfig = {
     clerk: { enabled: false },
     polar: { enabled: false },
     convex: { enabled: false },
-    plunk: { enabled: false },
+    resend: { enabled: false },
     openai: { enabled: false },
   },
   ui: {
@@ -94,7 +95,7 @@ export const authOnlyConfig: AppConfig = {
       deployment: process.env.CONVEX_DEPLOYMENT,
       url: process.env.VITE_CONVEX_URL,
     },
-    plunk: { enabled: false },
+    resend: { enabled: false },
     openai: {
       enabled: true,
       apiKey: process.env.OPENAI_API_KEY,
@@ -130,7 +131,7 @@ export const paymentsOnlyConfig: AppConfig = {
       deployment: process.env.CONVEX_DEPLOYMENT,
       url: process.env.VITE_CONVEX_URL,
     },
-    plunk: { enabled: false },
+    resend: { enabled: false },
     openai: { enabled: false },
   },
   ui: {
@@ -154,7 +155,7 @@ export const staticConfig: AppConfig = {
     clerk: { enabled: false },
     polar: { enabled: false },
     convex: { enabled: false },
-    plunk: { enabled: false },
+    resend: { enabled: false },
     openai: { enabled: false },
   },
   ui: {

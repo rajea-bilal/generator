@@ -44,8 +44,8 @@ features: {
 - [x] **Dashboard**: `/dashboard` accessible but no dynamic features
 - [x] **No Chat**: Chat functionality not visible in dashboard
 - [x] **TypeScript**: `npm run typecheck` passes
-- [ ] **Tests**: `npm run test` passes
-- [ ] **E2E**: `npm run test:e2e` passes
+- [x] **Tests**: `npm run test` passes
+- [x] **E2E**: `npm run test:e2e` passes
 
 ---
 
@@ -64,6 +64,7 @@ features: {
 services: {
   clerk: { enabled: true },
   convex: { enabled: true },
+  resend: { enabled: false },
 }
 ui: {
   showAuth: true,
@@ -112,6 +113,7 @@ features: {
 services: {
   polar: { enabled: true },
   convex: { enabled: true },
+  resend: { enabled: false },
 }
 ui: {
   showPricing: true,
@@ -143,7 +145,51 @@ VITE_CONVEX_URL=https://your-deployment.convex.cloud
 
 ---
 
-### 4. 🚀 Full SaaS Configuration
+### 4. 📧 Email-Only Configuration
+**Config**: Enable email + convex, disable auth/payments/monitoring
+
+```typescript
+// config.ts
+features: {
+  auth: false,
+  payments: false,
+  convex: true,
+  email: true,
+  monitoring: false,
+}
+services: {
+  convex: { enabled: true },
+  resend: { enabled: true },
+}
+ui: {
+  showPricing: false,
+  showDashboard: true,
+  showAuth: false,
+  showChat: false,
+}
+```
+
+#### Environment Variables Required:
+```bash
+CONVEX_DEPLOYMENT=your-deployment
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
+RESEND_API_KEY=re_...
+RESEND_WEBHOOK_SECRET=whsec_...
+```
+
+#### Tests:
+- [ ] **Config Validation**: No validation errors
+- [ ] **Build**: Completes successfully
+- [ ] **Email Sending**: `sendTestEmail()` function works
+- [ ] **Email Webhooks**: `/resend-webhook` endpoint processes events
+- [ ] **Event Handling**: Email events are logged correctly
+- [ ] **Dashboard**: Accessible without authentication
+- [ ] **No Auth**: No authentication UI visible
+- [ ] **No Payments**: No pricing or payment features visible
+
+---
+
+### 5. 🚀 Full SaaS Configuration
 **Config**: Enable all features
 
 ```typescript
@@ -152,13 +198,14 @@ features: {
   auth: true,
   payments: true,
   convex: true,
-  email: false, // Set to true when implementing
+  email: true,
   monitoring: true,
 }
 services: {
   clerk: { enabled: true },
   polar: { enabled: true },
   convex: { enabled: true },
+  resend: { enabled: true },
   openai: { enabled: true },
   sentry: { enabled: true },
   openstatus: { enabled: true },
@@ -188,6 +235,10 @@ VITE_CONVEX_URL=https://your-deployment.convex.cloud
 
 # AI
 OPENAI_API_KEY=sk-...
+
+# Email
+RESEND_API_KEY=re_...
+RESEND_WEBHOOK_SECRET=whsec_...
 
 # Monitoring
 VITE_SENTRY_DSN=https://...
@@ -258,6 +309,14 @@ OPENSTATUS_WEBHOOK_URL=https://...
 - [ ] **Source Maps**: Error stack traces are readable
 - [ ] **Performance**: Performance monitoring works
 - [ ] **Release Tracking**: Releases are tracked properly
+
+### Resend Email Service
+**Setup**: Create Resend account and configure Convex component
+- [ ] **Environment**: Set `RESEND_API_KEY` and `RESEND_WEBHOOK_SECRET`
+- [ ] **Send Email**: Email sending functionality works
+- [ ] **Webhooks**: Email event webhooks are processed at `/resend-webhook`
+- [ ] **Event Handling**: Email events (delivered, bounced, etc.) are logged
+- [ ] **Error Handling**: API errors handled gracefully
 
 ### OpenStatus Monitoring
 **Setup**: Create OpenStatus project

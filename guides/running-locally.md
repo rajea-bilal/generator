@@ -13,7 +13,7 @@ export const config: AppConfig = {
     auth: true,        // Do you want user authentication?
     payments: true,    // Do you want subscription billing?
     convex: true,      // Do you want backend database?
-    email: false,      // Email (not implemented yet)
+    email: false,      // Email with Resend (optional)
   },
   // ... rest of config
 };
@@ -117,6 +117,10 @@ POLAR_WEBHOOK_SECRET=<your-webhook-secret>
 # Feature flags (automatically set by config system, but you can set manually)
 PAYMENTS_ENABLED=true
 EMAIL_ENABLED=false
+
+# Optional: Resend Email (if email: true)
+RESEND_API_KEY=re_your_api_key_here
+RESEND_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 ```
 
 ## Step 7: Configure Webhooks (If payments: true)
@@ -158,7 +162,34 @@ server: {
 }
 ```
 
-## Step 9: Start the Development Server
+## Step 9: Set Up Resend Email (Optional - If email: true)
+
+**Skip this step if you set `email: false` in your config**
+
+1. Go to [Resend.com](https://resend.com) and create an account
+2. Create a new API key in your dashboard
+3. In Convex Dashboard, add these environment variables:
+```env
+RESEND_API_KEY=re_your_api_key_here
+RESEND_WEBHOOK_SECRET=whsec_your_webhook_secret_here  # Optional
+```
+
+4. Enable email in your `config.ts`:
+```typescript
+features: {
+  email: true,      // Enable email feature
+  convex: true,     // Required for Resend component
+}
+services: {
+  resend: {
+    enabled: true,
+  },
+}
+```
+
+For detailed email setup, see the [Email Setup Guide](./email-setup.md).
+
+## Step 10: Start the Development Server
 
 ### For Configurations WITH Convex:
 1. In one terminal, keep Convex running:
@@ -217,6 +248,10 @@ POLAR_WEBHOOK_SECRET="..."
 
 # OpenAI Chat
 OPENAI_API_KEY="sk-..."
+
+# Resend Email (optional)
+RESEND_API_KEY="re_..."
+RESEND_WEBHOOK_SECRET="whsec_..."
 
 # Frontend URL (for webhooks)
 FRONTEND_URL="http://localhost:5173"

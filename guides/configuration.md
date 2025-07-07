@@ -9,7 +9,7 @@ Kaizen uses a flexible configuration system that allows you to enable/disable fi
 - **Authentication** (Clerk) - User login/signup, protected routes
 - **Payments** (Polar.sh) - Subscription billing, payment processing  
 - **Backend** (Convex) - Real-time database, server functions, AI chat
-- **Email** (Plunk) - Email sending (coming soon)
+- **Email** (Resend) - Email sending via Convex component
 - **Monitoring** (Sentry + OpenStatus) - Error reporting, uptime monitoring, alerting
 
 ## 📁 Configuration Files
@@ -30,7 +30,7 @@ export const config: AppConfig = {
     auth: true,        // ✅ User authentication
     payments: true,    // ✅ Subscription billing
     convex: true,      // ✅ Real-time database
-    email: false,      // ❌ Email (not implemented yet)
+    email: false,      // ❌ Email (Resend implementation available)
     monitoring: true,  // ✅ Error reporting & monitoring
   },
   ui: {
@@ -73,10 +73,14 @@ OPENSTATUS_PROJECT_ID=your-project-id
 
 # Feature Flags for Convex (automatically set by the config system)
 PAYMENTS_ENABLED=true
-EMAIL_ENABLED=false
+EMAIL_ENABLED=false  # Set to true to enable Resend email
 AUTH_ENABLED=true
 CONVEX_ENABLED=true
 MONITORING_ENABLED=true
+
+# Resend Email (if email: true)
+RESEND_API_KEY=re_your_api_key_here
+RESEND_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 ```
 
 ### 2. Simple Frontend App
@@ -193,6 +197,49 @@ export const config: AppConfig = {
     showAuth: true,       // Show login
   },
 };
+```
+
+### 6. Email-Enabled Configuration
+**Perfect for:** Applications with transactional emails, notifications
+
+```typescript
+// config.ts
+export const config: AppConfig = {
+  features: {
+    auth: true,        // ✅ User authentication
+    payments: false,   // ❌ No payments
+    convex: true,      // ✅ Database for email logs
+    email: true,       // ✅ Email notifications
+  },
+  services: {
+    resend: {
+      enabled: true,
+      apiKey: getEnvVar('RESEND_API_KEY'),
+      webhookSecret: getEnvVar('RESEND_WEBHOOK_SECRET'),
+    },
+  },
+  ui: {
+    showPricing: false,   // Hide pricing
+    showDashboard: true,  // Show dashboard
+    showChat: false,      // Hide chat
+    showAuth: true,       // Show login/signup
+  },
+};
+```
+
+**Required Environment Variables:**
+```env
+# Clerk Authentication
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Convex Backend
+CONVEX_DEPLOYMENT=...
+VITE_CONVEX_URL=https://...convex.cloud
+
+# Resend Email
+RESEND_API_KEY=re_...
+RESEND_WEBHOOK_SECRET=whsec_...
 ```
 
 ## 🔄 Migration Between Configurations

@@ -24,6 +24,9 @@ This guide provides instructions for deploying the application to production wit
 **If chat enabled**
 - [OpenAI](https://platform.openai.com) account
 
+**If email: true**
+- [Resend](https://resend.com) account
+
 **If monitoring: true**
 - [Sentry](https://sentry.io) account
 - [OpenStatus](https://openstatus.dev) account (optional)
@@ -37,7 +40,7 @@ export const config: AppConfig = {
     auth: true,        // Set based on your needs
     payments: true,    // Set based on your needs
     convex: true,      // Set based on your needs
-    email: false,      // Keep false for now
+    email: false,      // Enable if you want Resend email
     monitoring: true,  // Enable for production error tracking
   },
   // ... rest of config
@@ -89,6 +92,14 @@ npx convex deploy
    - Create new token with `project:write` and `org:read` scopes
 4. Note your organization slug and project name
 
+### Resend Setup (If email: true)
+**Skip this section if you disabled email in your configuration**
+
+1. Create an account at [Resend](https://resend.com)
+2. Generate an API key in your dashboard
+3. (Optional) Generate a webhook secret for event handling
+4. For production, verify your sending domain
+
 ### OpenStatus Setup (If monitoring: true and uptime monitoring desired)
 **Optional - only if you want uptime monitoring**
 
@@ -118,6 +129,10 @@ POLAR_ACCESS_TOKEN="pk_live_..."
 POLAR_ORGANIZATION_ID="org_..."
 POLAR_WEBHOOK_SECRET="whsec_..."
 
+# Resend (if email enabled)
+RESEND_API_KEY="re_..."
+RESEND_WEBHOOK_SECRET="whsec_..."
+
 # Sentry (if monitoring enabled)
 SENTRY_DSN="https://your-dsn@sentry.io/project-id"
 
@@ -127,7 +142,7 @@ OPENSTATUS_PROJECT_ID="your-project-id"
 
 # Feature flags (automatically set by config, but include for clarity)
 PAYMENTS_ENABLED="true"
-EMAIL_ENABLED="false"
+EMAIL_ENABLED="false"  # Set to "true" if using email
 AUTH_ENABLED="true"
 CONVEX_ENABLED="true"
 MONITORING_ENABLED="true"
@@ -193,16 +208,26 @@ OPENSTATUS_PROJECT_ID="your-project-id"
 
 6. Deploy the project
 
-## Step 6: Configure Webhooks (If payments: true)
+## Step 6: Configure Webhooks (If payments: true or email: true)
 
+### Polar Webhooks (If payments: true)
 **Skip this section if you disabled payments in your configuration**
 
-### Polar Webhooks
 1. In Polar dashboard:
    - Go to Webhooks
    - Add endpoint: `https://your-convex-deployment.convex.cloud/payments/webhook`
    - Format: Raw
    - Select all event types
+   - Save the webhook
+
+### Resend Webhooks (If email: true)
+**Skip this section if you disabled email in your configuration**
+
+1. In Resend dashboard:
+   - Go to Webhooks
+   - Add endpoint: `https://your-convex-deployment.convex.cloud/resend-webhook`
+   - Select events: `email.delivered`, `email.bounced`, `email.complained`
+   - Use the webhook secret from your environment variables
    - Save the webhook
 
 ## Step 7: Update Service Configurations
@@ -299,6 +324,12 @@ Test based on your configuration:
 - [ ] Polar webhooks are pointing to production URL
 - [ ] Subscription plans are set up in Polar
 
+### If email: true
+- [ ] Resend environment variables are set in Convex
+- [ ] Resend webhooks are pointing to production URL
+- [ ] Domain is verified in Resend (for production)
+- [ ] Email functions are working correctly
+
 ### If chat enabled
 - [ ] OpenAI API key has sufficient quota
 
@@ -327,6 +358,11 @@ Test based on your configuration:
 ### Backend Issues (If convex: true)
 - **Database errors**: Monitor Convex logs for backend errors
 - **API failures**: Check Convex environment variables
+
+### Email Issues (If email: true)
+- **Emails not sending**: Check Resend API key and environment variables
+- **Webhooks not working**: Verify webhook URL and secret configuration
+- **Domain not verified**: Complete domain verification in Resend dashboard
 
 ### Chat Issues (If chat enabled)
 - **Chat not working**: Verify OpenAI API key and Convex configuration

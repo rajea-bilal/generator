@@ -21,7 +21,7 @@ export default function CoreFeaturesSection() {
     {
       icon: <Mail className="size-5 text-primary" />,
       title: "Emails",
-      description: "Transactional & marketing emails with Plunk.",
+      description: "Transactional & marketing emails with Resend.",
     },
     {
       icon: <Box className="size-5 text-primary" />,

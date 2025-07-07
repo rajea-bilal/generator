@@ -23,7 +23,7 @@ export interface AppConfig {
     auth: boolean;        // Enable Clerk user authentication
     payments: boolean;    // Enable Polar.sh subscription billing  
     convex: boolean;      // Enable Convex real-time database
-    email: boolean;       // Enable Plunk email (coming soon)
+    email: boolean;       // Enable Resend email via Convex component
     monitoring: boolean;  // Enable error reporting and monitoring
   };
   services: {
@@ -43,9 +43,10 @@ export interface AppConfig {
       deployment?: string;
       url?: string;
     };
-    plunk?: {
+    resend?: {
       enabled: boolean;
       apiKey?: string;
+      webhookSecret?: string;
     };
     openai?: {
       enabled: boolean;
@@ -96,7 +97,7 @@ export const config: AppConfig = {
     auth: false,        // Enable/disable Clerk authentication
     payments: false,    // Enable/disable Polar.sh payments
     convex: false,      // Enable/disable Convex backend
-    email: false,      // Enable/disable Plunk email (not yet implemented)
+    email: false,      // Enable/disable Resend email
     monitoring: false,  // Enable/disable error reporting and monitoring
   },
   services: {
@@ -116,9 +117,10 @@ export const config: AppConfig = {
       deployment: getEnvVar('CONVEX_DEPLOYMENT'),
       url: getEnvVar('VITE_CONVEX_URL'),
     },
-    plunk: {
+    resend: {
       enabled: false,
-      apiKey: getEnvVar('PLUNK_API_KEY'),
+      apiKey: getEnvVar('RESEND_API_KEY'),
+      webhookSecret: getEnvVar('RESEND_WEBHOOK_SECRET'),
     },
     openai: {
       enabled: false,
@@ -191,9 +193,9 @@ export const validateConfig = (): { valid: boolean; errors: string[] } => {
     }
   }
 
-  if (isFeatureEnabled('email') && isServiceEnabled('plunk')) {
-    if (!config.services.plunk?.apiKey) {
-      errors.push('PLUNK_API_KEY is required when email is enabled');
+  if (isFeatureEnabled('email') && isServiceEnabled('resend')) {
+    if (!config.services.resend?.apiKey) {
+      errors.push('RESEND_API_KEY is required when email is enabled');
     }
   }
 
@@ -228,7 +230,7 @@ export const syncConfigWithEnv = () => {
     // Also sync service-specific flags
     process.env.CLERK_ENABLED = isServiceEnabled('clerk') ? 'true' : 'false';
     process.env.POLAR_ENABLED = isServiceEnabled('polar') ? 'true' : 'false';
-    process.env.PLUNK_ENABLED = isServiceEnabled('plunk') ? 'true' : 'false';
+    process.env.RESEND_ENABLED = isServiceEnabled('resend') ? 'true' : 'false';
     process.env.OPENAI_ENABLED = isServiceEnabled('openai') ? 'true' : 'false';
     process.env.SENTRY_ENABLED = isServiceEnabled('sentry') ? 'true' : 'false';
     process.env.OPENSTATUS_ENABLED = isServiceEnabled('openstatus') ? 'true' : 'false';
