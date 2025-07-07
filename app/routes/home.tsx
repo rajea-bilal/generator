@@ -1,6 +1,7 @@
 import { isFeatureEnabled, isServiceEnabled } from "../../config";
 import ContentSection from "~/components/homepage/content";
 import CoreFeaturesSection from "~/components/homepage/core-features";
+import { ConvexComparison } from "~/components/homepage/convex-comparison";
 import Footer from "~/components/homepage/footer";
 import Integrations from "~/components/homepage/integrations";
 import Pricing from "~/components/homepage/pricing";
@@ -96,6 +97,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       <Integrations loaderData={loaderData} />
       <ContentSection />
       <CoreFeaturesSection />
+      <ConvexComparison />
       <Pricing loaderData={loaderData} />
       <FAQ />
       <Footer />

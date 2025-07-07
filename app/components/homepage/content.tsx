@@ -40,7 +40,7 @@ export default function ContentSection() {
               className="gap-1 pr-1.5"
             >
               <Link to="https://www.convex.dev/" target="_blank" rel="noopener noreferrer">
-                <span>Learn More</span>
+                <span>Learn More About Convex</span>
                 <ChevronRight className="size-2" />
               </Link>
             </Button>
