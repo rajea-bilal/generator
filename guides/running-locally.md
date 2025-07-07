@@ -192,12 +192,14 @@ You should see:
 
 4. **Add to Convex environment variables**:
    - Go to Convex dashboard → **Settings** → **Environment Variables**
-   - Add these three variables:
+   - Add these variables:
    ```bash
    POLAR_ACCESS_TOKEN=polar_...
    POLAR_ORGANIZATION_ID=org_...
    POLAR_WEBHOOK_SECRET=whsec_...
+   FRONTEND_URL=http://localhost:5173
    ```
+   - ⚠️ **Note**: Update `FRONTEND_URL` to your ngrok URL when testing webhooks locally (see Step 7)
 
 5. **Update `config.ts`**:
    ```typescript
@@ -272,15 +274,16 @@ If you're testing payments locally, you need to expose your localhost to the int
    });
    ```
 
-5. **Update environment variables**:
+5. **Update Convex environment variables** (Required for payments):
    - In Convex dashboard → **Settings** → **Environment Variables**
    - Add: `FRONTEND_URL` with your ngrok URL (no trailing slash)
-   - Example: `https://abc123.ngrok.io`
+   - Example: `FRONTEND_URL=https://abc123.ngrok.io`
+   - ⚠️ **Important**: This is required for payment redirects to work!
 
 6. **Update Polar webhook URL**:
    - Go to Polar → **Settings** → **Webhooks**
    - Edit your webhook endpoint
-   - Change URL to: `https://your-ngrok-url.ngrok.io/payments/webhook`
+   - Change URL to: `https://your-convex-url.convex.cloud/payments/webhook`
    - Note: Use your Convex HTTP actions URL, not your frontend ngrok URL
 
 ### 7.2 Test Payment Flow
@@ -443,11 +446,17 @@ If you enabled monitoring with Convex Pro:
    - Verify Clerk keys are correct
    - Check that localhost URLs are allowed in Clerk dashboard
 
-3. **Build errors**:
+3. **Payment checkout errors** (e.g., "Input should be a valid URL"):
+   - Check that `FRONTEND_URL` is set in Convex environment variables
+   - Verify the URL format: `https://abc123.ngrok.io` (no trailing slash)
+   - For local development: use your ngrok URL
+   - For production: use your actual domain
+
+4. **Build errors**:
    - Run `npm run typecheck` to see TypeScript errors
    - Make sure all enabled services have required environment variables
 
-4. **Styling issues**:
+5. **Styling issues**:
    - Clear browser cache
    - Check that Tailwind CSS is working
    - Verify component imports are correct

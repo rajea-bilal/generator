@@ -46,6 +46,7 @@ export default function IntegratedPricing() {
   }
 
   const { isSignedIn, userId } = useAuth();
+
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const [plans, setPlans] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);

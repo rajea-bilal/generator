@@ -15,14 +15,13 @@ const createCheckout = async ({
   successUrl: string;
   metadata?: Record<string, string>;
 }) => {
-  // Check if payments are enabled
-  const isPaymentsEnabled = process.env.PAYMENTS_ENABLED === 'true';
-  if (!isPaymentsEnabled) {
-    throw new Error("Payments are not enabled in the current configuration");
-  }
-
+  // Check if required Polar environment variables are configured
   if (!process.env.POLAR_ACCESS_TOKEN) {
     throw new Error("POLAR_ACCESS_TOKEN is not configured");
+  }
+  
+  if (!process.env.POLAR_ORGANIZATION_ID) {
+    throw new Error("POLAR_ORGANIZATION_ID is not configured");
   }
 
   const polar = new Polar({
@@ -292,6 +291,7 @@ export const handleWebhookEvent = mutation({
 
     switch (eventType) {
       case "subscription.created":
+        console.log("📝 Creating new subscription record for userId:", args.body.data.metadata.userId);
         // Insert new subscription
         await ctx.db.insert("subscriptions", {
           polarId: args.body.data.id,
@@ -323,6 +323,7 @@ export const handleWebhookEvent = mutation({
           customFieldData: args.body.data.custom_field_data || {},
           customerId: args.body.data.customer_id,
         });
+        console.log("✅ Subscription record created successfully");
         break;
 
       case "subscription.updated":
@@ -445,10 +446,12 @@ const validateEvent = (
 
 export const paymentWebhook = httpAction(async (ctx, request) => {
   try {
-    // Check if payments are enabled
-    const isPaymentsEnabled = process.env.PAYMENTS_ENABLED === 'true';
-    if (!isPaymentsEnabled) {
-      return new Response(JSON.stringify({ message: "Payments not enabled" }), {
+    console.log("🔗 Webhook received at:", new Date().toISOString());
+    
+    // Check if required Polar environment variables are configured
+    if (!process.env.POLAR_ACCESS_TOKEN || !process.env.POLAR_ORGANIZATION_ID) {
+      console.log("❌ Polar not configured - missing environment variables");
+      return new Response(JSON.stringify({ message: "Polar not configured" }), {
         status: 200,
         headers: {
           "Content-Type": "application/json",
@@ -457,6 +460,7 @@ export const paymentWebhook = httpAction(async (ctx, request) => {
     }
 
     const rawBody = await request.text();
+    console.log("📦 Webhook body length:", rawBody.length);
 
     // Internally validateEvent uses headers as a dictionary e.g. headers["webhook-id"]
     // So we need to convert the headers to a dictionary
@@ -475,12 +479,14 @@ export const paymentWebhook = httpAction(async (ctx, request) => {
     validateEvent(rawBody, headers, process.env.POLAR_WEBHOOK_SECRET);
 
     const body = JSON.parse(rawBody);
+    console.log("🎯 Webhook event type:", body.type);
 
     // track events and based on events store data
     await ctx.runMutation(api.subscriptions.handleWebhookEvent, {
       body,
     });
 
+    console.log("✅ Webhook processed successfully");
     return new Response(JSON.stringify({ message: "Webhook received!" }), {
       status: 200,
       headers: {

@@ -40,8 +40,8 @@ export async function loader(args: Route.LoaderArgs) {
     const { api } = await import("../../../convex/_generated/api");
 
     const subscriptionStatus = await fetchQuery(
-      api.subscriptions.checkUserSubscriptionStatus,
-      { userId }
+      api.subscriptions.checkUserSubscriptionStatusByClerkId,
+      { clerkUserId: userId }
     );
 
     if (!subscriptionStatus?.hasActiveSubscription) {

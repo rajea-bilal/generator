@@ -83,34 +83,35 @@ VITE_CONVEX_URL=https://your-deployment.convex.cloud
 ```
 
 #### Tests:
-- [ ] **Config Validation**: `validateConfig()` returns no errors
-- [ ] **Build**: `npm run build` completes
-- [ ] **Dev Server**: Starts without config errors
-- [ ] **Auth UI**: Sign-in/sign-up buttons visible on homepage
-- [ ] **Sign-up Flow**: `/sign-up` page loads, form functional
-- [ ] **Sign-in Flow**: `/sign-in` page loads, form functional
-- [ ] **Protected Routes**: Dashboard requires authentication
-- [ ] **Clerk Integration**: User can sign up/in successfully
-- [ ] **Convex Connection**: Dashboard shows user data
-- [ ] **Chat Feature**: AI chat works in dashboard (if OpenAI configured)
-- [ ] **No Pricing**: Pricing routes not accessible
-- [ ] **Session Persistence**: Refresh page maintains auth state
+- [x] **Config Validation**: `validateConfig()` returns no errors
+- [x] **Build**: `npm run build` completes
+- [x] **Dev Server**: Starts without config errors
+- [x] **Auth UI**: Sign-in/sign-up buttons visible on homepage
+- [x] **Sign-up Flow**: `/sign-up` page loads, form functional
+- [x] **Sign-in Flow**: `/sign-in` page loads, form functional
+- [x] **Protected Routes**: Dashboard requires authentication
+- [x] **Clerk Integration**: User can sign up/in successfully
+- [x] **Convex Connection**: Dashboard shows user data
+- [x] **Chat Feature**: AI chat works in dashboard (if OpenAI configured)
+- [x] **No Pricing**: Pricing routes not accessible
+- [x] **Session Persistence**: Refresh page maintains auth state
 
 ---
 
-### 3. 💳 Payments-Only Configuration
-**Config**: Enable payments + convex, disable auth/email/monitoring
+### 3. 💳 Payments Configuration  
+**Config**: Enable payments + auth + convex, disable email/monitoring
 
 ```typescript
 // config.ts
 features: {
-  auth: false,
+  auth: true,
   payments: true,
   convex: true,
   email: false,
   monitoring: false,
 }
 services: {
+  clerk: { enabled: true },
   polar: { enabled: true },
   convex: { enabled: true },
   resend: { enabled: false },
@@ -118,41 +119,52 @@ services: {
 ui: {
   showPricing: true,
   showDashboard: true,
-  showAuth: false,
+  showAuth: true,
   showChat: false,
 }
 ```
 
 #### Environment Variables Required:
 ```bash
+# Auth
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+VITE_CLERK_FRONTEND_API_URL=https://your-app.clerk.accounts.dev
+
+# Payments
 POLAR_ACCESS_TOKEN=polar_...
 POLAR_ORGANIZATION_ID=org_...
 POLAR_WEBHOOK_SECRET=whsec_...
+
+# Database
 CONVEX_DEPLOYMENT=your-deployment
 VITE_CONVEX_URL=https://your-deployment.convex.cloud
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
 ```
 
 #### Tests:
-- [ ] **Config Validation**: No validation errors
-- [ ] **Build**: Completes successfully
-- [ ] **Pricing Page**: `/pricing` accessible and displays plans
-- [ ] **Polar Integration**: Pricing plans load from Polar API
-- [ ] **Checkout Flow**: Payment buttons redirect to Polar
-- [ ] **Webhook Handler**: `/api/webhooks/polar` endpoint exists
-- [ ] **Success Page**: `/success` page accessible
-- [ ] **No Auth**: No authentication UI visible
-- [ ] **Dashboard**: Accessible without auth requirements
+- [x] **Config Validation**: No validation errors
+- [x] **Build**: Completes successfully
+- [x] **Auth UI**: Sign-in/sign-up buttons visible on homepage
+- [x] **Pricing Page**: `/pricing` accessible and displays plans
+- [x] **Polar Integration**: Pricing plans load from Polar API
+- [x] **Authentication Required**: Must sign in to access payments
+- [x] **Checkout Flow**: Payment buttons redirect to Polar after auth
+- [x] **Webhook Handler**: Payment webhooks processed correctly
+- [x] **Success Page**: `/success` page accessible after payment
+- [x] **Dashboard**: Protected dashboard with subscription access
+- [x] **Payment Flow**: Complete auth → payment → dashboard flow
 
 ---
 
-### 4. 📧 Email-Only Configuration
-**Config**: Enable email + convex, disable auth/payments/monitoring
+### 4. 📧 Email Configuration
+**Config**: Enable auth + convex + payments + email, disable monitoring
 
 ```typescript
 // config.ts
 features: {
-  auth: false,
-  payments: false,
+  auth: true,
+  payments: true,
   convex: true,
   email: true,
   monitoring: false,

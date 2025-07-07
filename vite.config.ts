@@ -10,6 +10,6 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   server: {
-    allowedHosts: ["2b8c4787d264.ngrok.app"],
+    allowedHosts: ["146cecc0009a.ngrok.app"],
   },
 });
