@@ -1,6 +1,4 @@
-import * as Sentry from "@sentry/react";
 import { isRouteErrorResponse, useRouteError } from "react-router";
-import { isFeatureEnabled, isServiceEnabled } from "../../config";
 
 function AppErrorBoundary() {
   const error = useRouteError();
@@ -39,22 +37,7 @@ function AppErrorBoundary() {
   );
 }
 
-// Export Sentry-wrapped error boundary if monitoring is enabled
-export const ErrorBoundary = isFeatureEnabled("monitoring") && isServiceEnabled("sentry")
-  ? Sentry.withErrorBoundary(AppErrorBoundary, {
-      fallback: ({ error, resetError }) => (
-        <div className="error-page flex flex-col items-center justify-center min-h-screen p-8">
-          <div className="text-center space-y-4">
-            <h1 className="text-3xl font-bold text-red-600">Something went wrong</h1>
-            <p className="text-gray-600">We've been notified about this error.</p>
-            <button 
-              onClick={resetError}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      ),
-    })
-  : AppErrorBoundary;
+// Simple error boundary without Sentry integration
+// For Convex backend errors: Use built-in exception reporting via Dashboard
+// See: https://docs.convex.dev/production/integrations/exception-reporting
+export const ErrorBoundary = AppErrorBoundary;

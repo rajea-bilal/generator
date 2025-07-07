@@ -57,6 +57,8 @@ export interface AppConfig {
       dsn?: string;
       tracesSampleRate?: number;
       environment?: string;
+      // Note: For Convex backend errors, use built-in exception reporting via Dashboard
+      // See: https://docs.convex.dev/production/integrations/exception-reporting
     };
     openstatus?: {
       enabled: boolean;
@@ -268,6 +270,15 @@ export const initializeConfig = () => {
       .filter(([, service]) => service?.enabled)
       .map(([name]) => name)
       .join(', ') || 'None');
+      
+    // Log Sentry configuration details
+    if (isServiceEnabled('sentry')) {
+      const sentryConfig = getServiceConfig('sentry');
+      console.log('📊 Sentry Configuration:');
+      console.log(`   Frontend: ${sentryConfig?.dsn ? '✅ Enabled' : '❌ No DSN'}`);
+      console.log(`   Convex Backend: Use built-in exception reporting via Dashboard`);
+      console.log(`   Guide: https://docs.convex.dev/production/integrations/exception-reporting`);
+    }
   }
 };
 

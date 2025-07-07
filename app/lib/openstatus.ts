@@ -1,5 +1,4 @@
 import { isServiceEnabled, getServiceConfig } from "../../config";
-import * as Sentry from "@sentry/react";
 
 export async function createOpenStatusMonitor(config: {
   name: string;
@@ -37,9 +36,8 @@ export async function createOpenStatusMonitor(config: {
     return await response.json();
   } catch (error) {
     console.error("Failed to create OpenStatus monitor:", error);
-    if (typeof Sentry !== "undefined") {
-      Sentry.captureException(error);
-    }
+    // Note: Frontend errors will be captured by Sentry if enabled
+    // Convex backend errors use built-in exception reporting
   }
 }
 

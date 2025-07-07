@@ -325,6 +325,32 @@ OPENSTATUS_WEBHOOK_URL=https://...
 - [ ] **Status Updates**: Status changes are reported
 - [ ] **Webhook Integration**: Status webhooks are received
 
+### Monitoring Service Testing
+
+#### Convex Built-in Exception Reporting
+**Setup**: Requires Convex Pro subscription
+- [ ] **Convex Pro**: Deployment upgraded to Pro tier
+- [ ] **Sentry Project**: Generic project created in Sentry
+- [ ] **Dashboard Configuration**: Exception reporting configured via Convex Dashboard → Integrations
+- [ ] **Automatic Reporting**: All function errors automatically sent to Sentry
+- [ ] **Rich Metadata**: Errors include function name, type, runtime, request ID, environment, user context
+- [ ] **Zero Code**: No manual error wrapping required in functions
+
+#### Frontend Error Boundaries (Optional)
+**Setup**: Basic error boundaries included
+- [ ] **Error Boundaries**: React error boundaries catch frontend errors
+- [ ] **Graceful Degradation**: App handles frontend errors gracefully
+- [ ] **User Experience**: Error pages provide helpful information
+- [ ] **Manual Sentry**: Optional manual Sentry integration for advanced frontend tracking
+
+#### OpenStatus Uptime Monitoring (Optional)
+**Setup**: Create OpenStatus account
+- [ ] **Environment**: Set `OPENSTATUS_API_KEY` and `OPENSTATUS_PROJECT_ID`
+- [ ] **Health Endpoint**: `/api/health` endpoint responds correctly
+- [ ] **Monitor Creation**: Uptime monitors created for main app and API
+- [ ] **Alert Configuration**: Notifications configured for downtime
+- [ ] **Status Updates**: Monitor status updates correctly
+
 ---
 
 ## 🔧 Configuration Validation Testing

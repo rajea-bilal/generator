@@ -13,9 +13,9 @@ A modern, production-ready SaaS starter template for building full-stack React a
 - 🔐 **Authentication with Clerk** - Complete user management
 - 💳 **Subscription management with Polar.sh** - Billing and payments
 - 🗄️ **Real-time database with Convex** - Serverless backend
-- 📧 **Email with Resend** - Email notifications and transactional emails
+- 📧 **Email with Resend via Convex** - Email notifications and transactional emails
+- 📊 **Built-in Exception Reporting** - Convex Pro automatic error tracking with Sentry
 - 🤖 **AI Chat Integration** - OpenAI-powered chat functionality
-- 📊 **Interactive Dashboard** - User management and analytics
 - 🎯 **Webhook handling** - Payment and subscription events
 - 📱 **Responsive Design** - Mobile-first approach
 - 🚢 **Vercel Deployment Ready** - One-click deployment
@@ -34,8 +34,9 @@ A modern, production-ready SaaS starter template for building full-stack React a
 - **Convex** - Real-time database and serverless functions
 - **Clerk** - Authentication and user management
 - **Polar.sh** - Subscription billing and payments
-- **Resend** - Email notifications and transactional emails
+- **Resend via Convex** - Email notifications and transactional emails
 - **OpenAI** - AI chat capabilities
+- **Convex Built-in Exception Reporting** - Automatic error tracking with Sentry (Pro feature)
 
 ### Development & Deployment
 - **Vite** - Fast build tool
@@ -52,6 +53,7 @@ Kaizen includes a powerful configuration system that allows you to easily enable
 - **Payments** (Polar.sh)
 - **Backend** (Convex)
 - **Email** (Resend via Convex component)
+- **Monitoring** (Convex built-in exception reporting)
 - **AI Chat** (OpenAI)
 
 ### Quick Start Configurations
@@ -63,7 +65,8 @@ features: {
   auth: true,
   payments: true,
   convex: true,
-  email: false,
+  email: true,
+  monitoring: true,
 }
 ```
 
@@ -75,6 +78,7 @@ features: {
   payments: false,
   convex: false,
   email: false,
+  monitoring: false,
 }
 ```
 
@@ -86,6 +90,7 @@ features: {
   payments: false,
   convex: true,
   email: false,
+  monitoring: true,
 }
 ```
 
@@ -126,7 +131,8 @@ export const config: AppConfig = {
     auth: true,        // Enable/disable Clerk authentication
     payments: true,    // Enable/disable Polar.sh payments
     convex: true,      // Enable/disable Convex backend
-    email: false,      // Enable/disable Resend email
+    email: true,       // Enable/disable Resend email
+    monitoring: true,  // Enable/disable Convex built-in exception reporting
   },
   // ... rest of config
 };
@@ -164,7 +170,7 @@ CLERK_SECRET_KEY=your_clerk_secret_key_here
 
 ### If you enabled payments: true
 ```bash
-# Get these from Polar Dashboard:
+# Get these from Polar Dashboard and add them to the Environment Variables section of the Convex Dashboard:
 POLAR_ACCESS_TOKEN=your_polar_access_token_here
 POLAR_ORGANIZATION_ID=your_polar_organization_id_here
 POLAR_WEBHOOK_SECRET=your_polar_webhook_secret_here
@@ -244,70 +250,6 @@ Make sure to deploy the output of `npm run build`
 ├── build/
 │   ├── client/    # Static assets
 │   └── server/    # Server-side code
-```
-
-## Architecture
-
-### Key Routes
-- `/` - Homepage with pricing
-- `/pricing` - Dynamic pricing page
-- `/dashboard` - Protected user dashboard
-- `/dashboard/chat` - AI-powered chat interface
-- `/dashboard/settings` - User settings
-- `/success` - Subscription success page
-- `/webhook/polar` - Polar.sh webhook handler
-
-### Key Components
-
-#### Authentication & Authorization
-- Protected routes with Clerk authentication
-- Server-side user data loading with loaders
-- Automatic user synchronization
-
-#### Subscription Management
-- Dynamic pricing cards fetched from Polar.sh
-- Secure checkout flow with redirect handling
-- Real-time subscription status updates
-- Customer portal for subscription management
-- Webhook handling for payment events
-
-#### Dashboard Features
-- Interactive sidebar navigation
-- Real-time data updates
-- User profile management
-- AI chat functionality
-- Subscription status display
-
-#### AI Chat Integration
-- OpenAI-powered conversations
-- Real-time message streaming
-- Chat history persistence
-- Responsive chat interface
-
-## Environment Variables
-
-### Required for Production
-
-- `CONVEX_DEPLOYMENT` - Your Convex deployment URL
-- `VITE_CONVEX_URL` - Your Convex client URL
-- `VITE_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
-- `CLERK_SECRET_KEY` - Clerk secret key
-- `POLAR_ACCESS_TOKEN` - Polar.sh API access token
-- `POLAR_ORGANIZATION_ID` - Your Polar.sh organization ID
-- `POLAR_WEBHOOK_SECRET` - Polar.sh webhook secret
-- `OPENAI_API_KEY` - OpenAI API key for chat features
-- `FRONTEND_URL` - Your production frontend URL
-
-## Project Structure
-
-```
-├── app/
-│   ├── components/         # Reusable UI components
-│   │   ├── ui/            # shadcn/ui components
-│   │   ├── homepage/      # Homepage sections
-│   │   └── dashboard/     # Dashboard components
-│   ├── routes/            # React Router routes
-│   └── utils/             # Utility functions
 ├── convex/                # Convex backend functions
 ├── public/                # Static assets
 └── docs/                  # Documentation
@@ -349,3 +291,91 @@ This project is licensed under the MIT License.
 **Stop rebuilding the same foundation over and over.** RSK eliminates months of integration work by providing a complete, production-ready SaaS template with authentication, payments, AI chat, and real-time data working seamlessly out of the box.
 
 Built with ❤️ using React Router v7, Convex, Clerk, Polar.sh, and OpenAI.
+
+## Architecture
+
+### Key Routes
+- `/` - Homepage with pricing
+- `/pricing` - Dynamic pricing page
+- `/dashboard` - Protected user dashboard
+- `/dashboard/chat` - AI-powered chat interface
+- `/dashboard/settings` - User settings
+- `/success` - Subscription success page
+- `/api/webhooks/polar` - Polar.sh webhook handler
+
+### Key Components
+
+#### Authentication & Authorization
+- Protected routes with Clerk authentication
+- Server-side user data loading with loaders
+- Automatic user synchronization
+
+#### Subscription Management
+- Dynamic pricing cards fetched from Polar.sh
+- Secure checkout flow with redirect handling
+- Real-time subscription status updates
+- Customer portal for subscription management
+- Webhook handling for payment events
+
+#### Error Reporting & Monitoring
+- **Convex Built-in Exception Reporting** - Automatic backend error tracking (Pro feature)
+- Rich error metadata: function name, type, runtime, request ID, environment, user context
+- Zero code changes required - all Convex function errors automatically captured
+- Frontend error boundaries for graceful error handling
+
+#### Dashboard Features
+- Interactive sidebar navigation
+- Real-time data updates
+- User profile management
+- AI chat functionality
+- Subscription status display
+
+#### AI Chat Integration
+- OpenAI-powered conversations
+- Real-time message streaming
+- Chat history persistence
+- Responsive chat interface
+
+## Environment Variables
+
+### Core (Always Required)
+- `CONVEX_DEPLOYMENT` - Your Convex deployment name
+- `VITE_CONVEX_URL` - Your Convex client URL
+
+### Authentication (if auth: true)
+- `VITE_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+- `CLERK_SECRET_KEY` - Clerk secret key
+
+### Payments (if payments: true)
+- `POLAR_ACCESS_TOKEN` - Polar.sh API access token
+- `POLAR_ORGANIZATION_ID` - Your Polar.sh organization ID
+- `POLAR_WEBHOOK_SECRET` - Polar.sh webhook secret
+
+### Email (if email: true)
+- `RESEND_API_KEY` - Resend API key for email sending
+- `RESEND_WEBHOOK_SECRET` - Resend webhook secret
+
+### AI Features (if using chat)
+- `OPENAI_API_KEY` - OpenAI API key for chat features
+
+### Monitoring (if monitoring: true)
+- **Backend**: Configure via Convex Dashboard → Integrations → Exception Reporting (requires Pro)
+- **Frontend** (optional): `VITE_SENTRY_DSN` - Sentry DSN for manual frontend error tracking
+
+### Production
+- `FRONTEND_URL` - Your production frontend URL
+
+## Project Structure
+
+```
+├── app/
+│   ├── components/         # Reusable UI components
+│   │   ├── ui/            # shadcn/ui components
+│   │   ├── homepage/      # Homepage sections
+│   └── dashboard/         # Dashboard components
+├── routes/                # React Router routes
+├── convex/                # Convex backend functions
+├── guides/                # Setup documentation
+├── public/                # Static assets
+└── config.ts              # Feature configuration
+```

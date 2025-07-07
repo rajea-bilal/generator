@@ -14,15 +14,9 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import { Analytics } from "@vercel/analytics/react";
 import { config, initializeConfig, isFeatureEnabled, isServiceEnabled } from "../config";
-import { ErrorBoundary as SentryErrorBoundary } from "./components/ErrorBoundary";
 
 // Initialize configuration
 initializeConfig();
-
-// Initialize Sentry on the client side
-if (typeof window !== "undefined") {
-  import("./sentry.client");
-}
 
 // Conditionally create Convex client
 const convex = isFeatureEnabled('convex') && config.services.convex?.url 
@@ -145,12 +139,6 @@ export default function App({ loaderData }: Route.ComponentProps) {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  // Use Sentry error boundary if monitoring is enabled
-  if (isFeatureEnabled("monitoring") && isServiceEnabled("sentry")) {
-    return <SentryErrorBoundary />;
-  }
-
-  // Fallback to default error boundary
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;

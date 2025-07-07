@@ -1,382 +1,325 @@
-# Deploying to Production Guide
+# 🚀 Deploy to Production Guide
 
-This guide provides instructions for deploying the application to production with different configuration options.
-
-**Date:** June 2025
+This guide walks you through deploying your Kaizen application to production with all services properly configured and monitored.
 
 ## Prerequisites
 
-### Required for All Deployments:
-- A Git repository with your code (GitHub, GitLab, or Bitbucket)
-- A [Vercel](https://vercel.com) account
+Before deploying to production:
 
-### Required Based on Your Configuration:
+- [ ] Application working locally with your desired features
+- [ ] Production accounts for enabled services:
+  - [Vercel](https://vercel.com) (for hosting)
+  - [Convex](https://convex.dev) (for database/backend)
+  - [Clerk](https://clerk.dev) (if using authentication)
+  - [Polar.sh](https://polar.sh) (if using payments)
+  - [Resend](https://resend.com) (if using email)
+  - [OpenStatus](https://openstatus.dev) (if using uptime monitoring)
+- [ ] Domain name (optional but recommended)
 
-**If auth: true**
-- [Clerk](https://dashboard.clerk.com) production account
+## Step 1: Prepare Production Services
 
-**If convex: true**
-- [Convex](https://dashboard.convex.dev) account
+### 1.1 Set Up Convex Production Environment
 
-**If payments: true**
-- [Polar](https://polar.sh) production account (not sandbox)
+1. **Deploy to production**:
+   ```bash
+   npx convex deploy --cmd-url-env-var-name=VITE_CONVEX_URL --prod
+   ```
 
-**If chat enabled**
-- [OpenAI](https://platform.openai.com) account
+2. **Configure exception reporting** (if monitoring enabled):
+   - Go to [Convex Dashboard](https://dashboard.convex.dev)
+   - Navigate to your production deployment
+   - Go to **Settings** → **Integrations** → **Exception Reporting**
+   - Set up Sentry integration (requires Convex Pro)
 
-**If email: true**
-- [Resend](https://resend.com) account
+3. **Note your production URLs**:
+   - Deployment URL: `https://your-deployment.convex.cloud`
+   - Deployment name: `your-deployment-name`
 
-**If monitoring: true**
-- [Sentry](https://sentry.io) account
-- [OpenStatus](https://openstatus.dev) account (optional)
+### 1.2 Configure Clerk for Production
 
-## Step 1: Prepare Your Repository
+1. **Create production instance** or configure existing:
+   - Go to [Clerk Dashboard](https://dashboard.clerk.dev)
+   - Create new application or switch to production
+   - Configure allowed origins:
+     - `https://your-domain.com`
+     - `https://your-deployment.vercel.app`
 
-1. **Configure your features** in `config.ts` for production:
-```typescript
-export const config: AppConfig = {
-  features: {
-    auth: true,        // Set based on your needs
-    payments: true,    // Set based on your needs
-    convex: true,      // Set based on your needs
-    email: false,      // Enable if you want Resend email
-    monitoring: true,  // Enable for production error tracking
-  },
-  // ... rest of config
-};
-```
+2. **Set up domains**:
+   - **Frontend API**: Your app domain
+   - **Backend API**: Your Convex deployment URL
 
-2. Ensure all your changes are committed
-3. Push your code to your Git repository
-4. Make sure your `.env` and `.env.local` files are in `.gitignore`
+3. **Configure webhooks** (if needed):
+   - **Endpoint**: `https://your-domain.com/api/webhooks/clerk`
+   - **Events**: Select user events you want to handle
 
-## Step 2: Deploy Backend to Convex (If convex: true)
+### 1.3 Set Up Polar.sh Production
 
-**Skip this step if you disabled Convex in your configuration**
+1. **Configure production organization**:
+   - Go to [Polar.sh Dashboard](https://polar.sh)
+   - Create or configure your organization
+   - Set up products and pricing
 
-1. Deploy your backend to Convex:
+2. **Configure webhooks**:
+   - **Webhook URL**: `https://your-domain.com/api/webhooks/polar`
+   - **Events**: Select subscription events
+   - **Secret**: Generate and save webhook secret
+
+### 1.4 Configure Resend for Production
+
+1. **Verify your domain**:
+   - Go to [Resend Dashboard](https://resend.com)
+   - Add your domain and verify DNS records
+   - This enables sending from your@domain.com
+
+2. **Set up webhooks**:
+   - **Endpoint**: `https://your-deployment.convex.cloud/resend-webhook`
+   - **Events**: Select email events to track
+
+## Step 2: Set Up Hosting (Vercel)
+
+### 2.1 Deploy to Vercel
+
+1. **Connect repository**:
+   ```bash
+   npx vercel
+   ```
+   
+2. **Configure build settings**:
+   - **Framework**: React Router
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+
+### 2.2 Set Production Environment Variables
+
+In Vercel Dashboard → Settings → Environment Variables:
+
 ```bash
-npx convex deploy
-```
+# Core Configuration
+NODE_ENV=production
 
-2. Note your production deployment URL: `https://your-project-name.convex.cloud`
-
-## Step 3: Configure Production Services
-
-### Clerk Setup (If auth: true)
-**Skip this section if you disabled auth in your configuration**
-
-1. Create a new production application in Clerk (or switch to production mode)
-2. Get your production API keys
-3. Set up the JWT template for Convex (if convex is also enabled):
-   - Go to JWT Templates
-   - Create a new Convex template
-   - Save the issuer URL
-
-### Polar Setup (If payments: true)
-**Skip this section if you disabled payments in your configuration**
-
-1. Switch to [polar.sh](https://polar.sh) (not sandbox)
-2. Create your production organization
-3. Set up your production plans
-4. Get your production API keys and organization ID
-
-### Sentry Setup (If monitoring: true)
-**Skip this section if you disabled monitoring in your configuration**
-
-1. Create a production project in [Sentry](https://sentry.io)
-2. Get your production DSN
-3. Generate an auth token for source map uploads:
-   - Go to Settings → Auth Tokens
-   - Create new token with `project:write` and `org:read` scopes
-4. Note your organization slug and project name
-
-### Resend Setup (If email: true)
-**Skip this section if you disabled email in your configuration**
-
-1. Create an account at [Resend](https://resend.com)
-2. Generate an API key in your dashboard
-3. (Optional) Generate a webhook secret for event handling
-4. For production, verify your sending domain
-
-### OpenStatus Setup (If monitoring: true and uptime monitoring desired)
-**Optional - only if you want uptime monitoring**
-
-1. Create an account at [OpenStatus](https://openstatus.dev)
-2. Create a new project/workspace
-3. Generate an API key with monitoring permissions
-
-## Step 4: Set Environment Variables
-
-### For Convex (If convex: true)
-**Skip this section if you disabled Convex**
-
-In the [Convex Dashboard](https://dashboard.convex.dev), add relevant environment variables:
-
-```env
-# Frontend Configuration
-FRONTEND_URL="https://your-vercel-domain.com"
-
-# OpenAI (if chat enabled)
-OPENAI_API_KEY="sk-..."
-
-# Clerk (if auth enabled)
-VITE_CLERK_FRONTEND_API_URL="https://your-clerk-frontend-api-url"
-
-# Polar (if payments enabled)
-POLAR_ACCESS_TOKEN="pk_live_..."
-POLAR_ORGANIZATION_ID="org_..."
-POLAR_WEBHOOK_SECRET="whsec_..."
-
-# Resend (if email enabled)
-RESEND_API_KEY="re_..."
-RESEND_WEBHOOK_SECRET="whsec_..."
-
-# Sentry (if monitoring enabled)
-SENTRY_DSN="https://your-dsn@sentry.io/project-id"
-
-# OpenStatus (if monitoring enabled and uptime monitoring desired)
-OPENSTATUS_API_KEY="your-api-key-here"
-OPENSTATUS_PROJECT_ID="your-project-id"
-
-# Feature flags (automatically set by config, but include for clarity)
-PAYMENTS_ENABLED="true"
-EMAIL_ENABLED="false"  # Set to "true" if using email
-AUTH_ENABLED="true"
-CONVEX_ENABLED="true"
-MONITORING_ENABLED="true"
-```
-
-### For Frontend-Only Deployments
-**If you're deploying without Convex, you only need Vercel environment variables**
-
-## Step 5: Deploy to Vercel
-
-1. Go to [Vercel](https://vercel.com)
-2. Create a new project
-3. Import your Git repository
-4. Configure the build settings:
-   - Framework Preset: Vite
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-   - Install Command: `npm install --legacy-peer-deps`
-
-5. Add environment variables in Vercel based on your configuration:
-
-### For Simple Frontend (No Backend)
-```env
-# No environment variables needed!
-```
-
-### For Configurations WITH Convex
-```env
-# Convex (client-side URLs)
-VITE_CONVEX_URL="https://your-deployment.convex.cloud"
-```
-
-### For Configurations WITH Auth
-```env
-# Clerk
-VITE_CLERK_PUBLISHABLE_KEY="pk_live_..."  # For client-side usage
-CLERK_SECRET_KEY="sk_live_..."            # Required for build time
-```
-
-### Complete Example (Full SaaS)
-```env
 # Convex
-VITE_CONVEX_URL="https://your-deployment.convex.cloud"
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
+CONVEX_DEPLOYMENT=your-deployment-name
 
-# Clerk
-VITE_CLERK_PUBLISHABLE_KEY="pk_live_..."
-CLERK_SECRET_KEY="sk_live_..."
+# Authentication (if enabled)
+VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
 
-# Sentry (for production error tracking)
-VITE_SENTRY_DSN="https://your-dsn@sentry.io/project-id"
-SENTRY_DSN="https://your-dsn@sentry.io/project-id"
-SENTRY_AUTH_TOKEN="your-auth-token-here"
-SENTRY_ORG="your-org-slug"
-SENTRY_PROJECT="kaizen-app"
-SENTRY_ENVIRONMENT="production"
+# Payments (if enabled)
+POLAR_ACCESS_TOKEN=polar_...
+POLAR_ORGANIZATION_ID=org_...
+POLAR_WEBHOOK_SECRET=whsec_...
 
-# OpenStatus (optional, for uptime monitoring)
-OPENSTATUS_API_KEY="your-api-key-here"
-OPENSTATUS_PROJECT_ID="your-project-id"
+# AI Features (if enabled)
+OPENAI_API_KEY=sk-...
+
+# Email (if enabled)
+RESEND_API_KEY=re_...
+RESEND_WEBHOOK_SECRET=whsec_...
+
+# Frontend Monitoring (optional)
+VITE_SENTRY_DSN=https://your-dsn@sentry.io/project-id
+
+# Uptime Monitoring (optional)
+OPENSTATUS_API_KEY=your-key
+OPENSTATUS_PROJECT_ID=your-project
 ```
 
-**Note:** All other environment variables (FRONTEND_URL, API keys, etc.) should be set in your Convex deployment, not in Vercel.
+### 2.3 Configure Domain (Optional)
 
-6. Deploy the project
+1. **Add custom domain** in Vercel:
+   - Go to Settings → Domains
+   - Add your domain
+   - Configure DNS records
 
-## Step 6: Configure Webhooks (If payments: true or email: true)
+2. **Update service configurations**:
+   - Update Clerk allowed origins
+   - Update webhook URLs to use custom domain
 
-### Polar Webhooks (If payments: true)
-**Skip this section if you disabled payments in your configuration**
+## Step 3: Configure Monitoring & Error Reporting
 
-1. In Polar dashboard:
-   - Go to Webhooks
-   - Add endpoint: `https://your-convex-deployment.convex.cloud/payments/webhook`
-   - Format: Raw
-   - Select all event types
-   - Save the webhook
+### 3.1 Set Up Convex Built-in Exception Reporting
 
-### Resend Webhooks (If email: true)
-**Skip this section if you disabled email in your configuration**
+1. **Upgrade to Convex Pro** (if not already):
+   - Go to Convex Dashboard → Billing
+   - Upgrade for built-in exception reporting
 
-1. In Resend dashboard:
-   - Go to Webhooks
-   - Add endpoint: `https://your-convex-deployment.convex.cloud/resend-webhook`
-   - Select events: `email.delivered`, `email.bounced`, `email.complained`
-   - Use the webhook secret from your environment variables
-   - Save the webhook
+2. **Create Sentry project**:
+   - Go to [Sentry.io](https://sentry.io)
+   - Create new project (Generic platform)
+   - Copy your DSN
 
-## Step 7: Update Service Configurations
+3. **Configure in Convex Dashboard**:
+   - Go to Settings → Integrations → Exception Reporting
+   - Click Sentry card
+   - Enter your Sentry DSN
+   - All backend errors will be automatically reported
 
-### Clerk (If auth: true)
-**Skip this section if you disabled auth**
+### 3.2 Set Up Uptime Monitoring (Optional)
 
-1. In Clerk Dashboard:
-   - Add your Vercel domain to allowed origins
-   - Update OAuth callback URLs
-   - Update any email templates with production URLs
+1. **Create OpenStatus monitors**:
+   - **Main App**: `https://your-domain.com`
+   - **Health Check**: `https://your-domain.com/api/health`
+   - **Convex Health**: Your Convex deployment status
 
-### Polar (If payments: true)
-**Skip this section if you disabled payments**
+2. **Configure notifications**:
+   - Email alerts for downtime
+   - Slack integration for team notifications
 
-1. Update subscription success/cancel URLs to your production domain
-2. Test a subscription with a real card
+## Step 4: Test Production Deployment
 
-### Sentry (If monitoring: true)
-**Skip this section if you disabled monitoring**
+### 4.1 Functionality Testing
 
-1. In Sentry Dashboard:
-   - Configure alert rules for production errors
-   - Set up notification channels (email, Slack)
-   - Verify source maps are uploading correctly
+- [ ] **Homepage**: Loads correctly with proper styling
+- [ ] **Authentication**: Sign up/sign in flow works (if enabled)
+- [ ] **Dashboard**: Protected routes work correctly
+- [ ] **Payments**: Checkout flow completes (if enabled)
+- [ ] **Real-time Features**: Database updates work
+- [ ] **Email**: Welcome emails send properly (if enabled)
 
-### OpenStatus (If monitoring: true and uptime monitoring enabled)
-**Skip this section if you didn't configure OpenStatus**
+### 4.2 Error Monitoring Testing
 
-1. Create monitors for your key endpoints:
-   - Main app: `https://your-production-domain.com`
-   - Health check: `https://your-production-domain.com/api/health`
-2. Set up notification channels and escalation policies
+1. **Test Convex error reporting**:
+   ```typescript
+   // Create temporary test function
+   export const testProductionError = mutation({
+     handler: async () => {
+       throw new Error("Production error reporting test");
+     }
+   });
+   ```
 
-## Step 8: Final Testing
+2. **Call the function** and verify:
+   - Error appears in Sentry with rich metadata
+   - Environment tagged as "prod"
+   - User context included (if authenticated)
 
-Test based on your configuration:
+3. **Remove test function** after verification
 
-### Simple Frontend Testing
-1. Visit your production URL
-2. Navigate through the demo dashboard
-3. Verify all pages load correctly
+### 4.3 Performance Testing
 
-### Auth-Only Testing
-1. Test the complete auth flow:
-   - Sign up
-   - Email verification (if enabled)
-   - Dashboard access
-   - Chat functionality
+- [ ] **Lighthouse Score**: Run audit on production URL
+- [ ] **Load Testing**: Test with expected user load
+- [ ] **Error Rates**: Monitor error rates in first few hours
+- [ ] **Response Times**: Verify API response times
 
-### Full SaaS Testing
-1. Test the complete user flow:
-   - Sign up
-   - Email verification
-   - Subscription process
-   - Dashboard access
-   - Chat functionality
-   - Subscription management
+## Step 5: Set Up Alerts & Notifications
 
-### Monitor logs in enabled services:
-- Convex Dashboard (if convex enabled)
-- Clerk Dashboard (if auth enabled)
-- Polar Dashboard (if payments enabled)
-- Sentry Dashboard (if monitoring enabled)
-- OpenStatus Dashboard (if uptime monitoring enabled)
+### 5.1 Sentry Alert Rules
 
-### Test Error Reporting (If monitoring: true)
-1. Test frontend error tracking:
-   - Open browser console
-   - Run: `throw new Error("Production test error");`
-   - Verify error appears in Sentry
-2. Test uptime monitoring (if OpenStatus configured):
-   - Verify monitors are running
-   - Check health endpoint: `/api/health`
+Create alerts for critical issues:
 
-## Production Checklist by Configuration
+1. **High Error Rate**:
+   - Trigger: >10 errors in 5 minutes
+   - Action: Email to team
 
-### All Configurations
-- [ ] Code is deployed to Vercel
-- [ ] Application loads without errors
-- [ ] Configuration is valid
+2. **New Error Types**:
+   - Trigger: First occurrence of new error
+   - Action: Slack notification
 
-### If convex: true
-- [ ] Convex environment variables are set
-- [ ] Backend is deployed to Convex
+3. **Performance Issues**:
+   - Trigger: Response time >5 seconds
+   - Action: Team notification
 
-### If auth: true
-- [ ] Clerk environment variables are set in Vercel
-- [ ] OAuth callbacks are updated in Clerk
-- [ ] JWT template is configured (if convex enabled)
+### 5.2 Uptime Monitoring Alerts
 
-### If payments: true
-- [ ] Polar environment variables are set in Convex
-- [ ] Polar webhooks are pointing to production URL
-- [ ] Subscription plans are set up in Polar
+1. **Critical Services Down**:
+   - Main application unreachable
+   - API health check failing
+   - Response time >30 seconds
 
-### If email: true
-- [ ] Resend environment variables are set in Convex
-- [ ] Resend webhooks are pointing to production URL
-- [ ] Domain is verified in Resend (for production)
-- [ ] Email functions are working correctly
+2. **Escalation Policy**:
+   - Immediate: Email notification
+   - 5 minutes: Slack alert
+   - 15 minutes: SMS to on-call person
 
-### If chat enabled
-- [ ] OpenAI API key has sufficient quota
+## Step 6: Post-Deployment Checklist
 
-### If monitoring: true
-- [ ] Sentry environment variables are set in Vercel
-- [ ] Sentry project is configured with alert rules
-- [ ] Source maps are uploading successfully
-- [ ] OpenStatus monitors are configured (if using uptime monitoring)
-- [ ] Notification channels are set up and tested
+### 6.1 Security Verification
 
-## Troubleshooting by Feature
+- [ ] **HTTPS**: All traffic uses HTTPS
+- [ ] **Environment Variables**: Not exposed in client
+- [ ] **API Keys**: Production keys, not test keys
+- [ ] **Webhook Secrets**: Properly configured and secure
+- [ ] **CORS Settings**: Restrictive for production
 
-### General Issues
-- **Build failures**: Check environment variables and TypeScript errors
-- **Configuration errors**: Verify config.ts matches your needs
-- **Missing features**: Check UI flags in config
+### 6.2 Performance Optimization
 
-### Auth Issues (If auth: true)
-- **Auth not working**: Verify Clerk origins and environment variables
-- **JWT errors**: Check Clerk-Convex integration setup
+- [ ] **CDN**: Static assets served from CDN
+- [ ] **Caching**: Proper cache headers set
+- [ ] **Bundle Size**: JavaScript bundle optimized
+- [ ] **Image Optimization**: Images compressed and optimized
+- [ ] **Database Indexes**: Convex queries optimized
 
-### Payment Issues (If payments: true)
-- **Webhooks not working**: Verify endpoint URLs and secrets
-- **Subscriptions failing**: Check Polar webhook configuration
+### 6.3 Monitoring Setup
 
-### Backend Issues (If convex: true)
-- **Database errors**: Monitor Convex logs for backend errors
-- **API failures**: Check Convex environment variables
+- [ ] **Error Reporting**: Convex built-in exception reporting configured
+- [ ] **Uptime Monitoring**: OpenStatus monitors active
+- [ ] **Performance Monitoring**: Response times tracked
+- [ ] **User Analytics**: Basic usage tracking (if desired)
+- [ ] **Alert Channels**: Team notifications configured
 
-### Email Issues (If email: true)
-- **Emails not sending**: Check Resend API key and environment variables
-- **Webhooks not working**: Verify webhook URL and secret configuration
-- **Domain not verified**: Complete domain verification in Resend dashboard
+### 6.4 Documentation
 
-### Chat Issues (If chat enabled)
-- **Chat not working**: Verify OpenAI API key and Convex configuration
+- [ ] **API Documentation**: Endpoints documented
+- [ ] **Deployment Notes**: Process documented for team
+- [ ] **Rollback Plan**: Emergency rollback procedure ready
+- [ ] **Contact Information**: On-call contacts available
 
-### Monitoring Issues (If monitoring: true)
-- **Errors not appearing in Sentry**: Check DSN configuration and network connectivity
-- **Source maps not working**: Verify auth token and build configuration in GitHub Actions
-- **Uptime monitoring not working**: Check OpenStatus API key and monitor configuration
-- **Alerts not firing**: Verify notification channels and alert rule configuration
+## Step 7: Ongoing Maintenance
 
-## Additional Resources
+### 7.1 Regular Monitoring
 
-### Monitoring Setup
-For detailed monitoring configuration, see the [Monitoring Setup Guide](./monitoring-setup.md).
+- **Daily**: Check error rates and uptime
+- **Weekly**: Review performance metrics
+- **Monthly**: Update dependencies and security patches
 
-### Configuration Help
-For configuration options and troubleshooting, see the [Configuration Guide](./configuration.md). 
+### 7.2 Backup Strategy
+
+- **Convex Data**: Automatic backups included
+- **Configuration**: Environment variables documented
+- **Code**: Git repository with tags for releases
+
+### 7.3 Scaling Considerations
+
+Monitor these metrics to plan for scaling:
+
+- **User Growth**: Active users and registrations
+- **Database Usage**: Convex storage and bandwidth
+- **Error Rates**: Increased errors may indicate scaling issues
+- **Response Times**: Degrading performance signals
+
+## Troubleshooting Production Issues
+
+### Common Deployment Problems
+
+1. **Environment Variables Not Set**:
+   - Check Vercel environment variables
+   - Verify spelling and case sensitivity
+   - Restart deployment after changes
+
+2. **Webhook Failures**:
+   - Verify webhook URLs are accessible
+   - Check webhook secrets match
+   - Review webhook logs in service dashboards
+
+3. **Authentication Issues**:
+   - Verify Clerk domains are correct
+   - Check that production keys are used
+   - Test authentication flow manually
+
+4. **Database Connection Issues**:
+   - Verify Convex deployment is live
+   - Check CONVEX_URL environment variable
+   - Test API endpoints manually
+
+### Getting Help
+
+- **Convex Issues**: [Convex Discord](https://convex.dev/community)
+- **Vercel Support**: [Vercel Support](https://vercel.com/support)
+- **Service-Specific**: Check individual service documentation
+- **Error Monitoring**: Sentry provides detailed error context
+
+---
+
+🎉 **Congratulations!** Your Kaizen application is now live in production with comprehensive monitoring and error reporting. Your Convex backend automatically reports all function errors to Sentry with rich metadata and context. 
