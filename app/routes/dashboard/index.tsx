@@ -1,8 +1,12 @@
 "use client";
 import { ChartAreaInteractive } from "~/components/dashboard/chart-area-interactive";
 import { SectionCards } from "~/components/dashboard/section-cards";
+import { TestEmailForm } from "~/components/dashboard/test-email-form";
+import { isFeatureEnabled, isServiceEnabled } from "../../../config";
 
 export default function Page() {
+  const emailEnabled = isFeatureEnabled('email') && isServiceEnabled('resend');
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
@@ -11,6 +15,11 @@ export default function Page() {
           <div className="px-4 lg:px-6">
             <ChartAreaInteractive />
           </div>
+          {emailEnabled && (
+            <div className="px-4 lg:px-6">
+              <TestEmailForm />
+            </div>
+          )}
         </div>
       </div>
     </div>

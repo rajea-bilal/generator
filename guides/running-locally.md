@@ -181,10 +181,10 @@ You should see:
    - Copy the Organization ID at the top
    
    **Webhook Secret:**
-   - Get your Convex HTTP actions URL from dashboard
+   - Get your Convex HTTP actions URL from dashboard (ends in `.convex.site`)
    - Go to **Settings** → **Webhooks** 
    - Click **Add Endpoint**
-   - URL: `https://your-convex-url.convex.cloud/payments/webhook`
+   - URL: `https://your-deployment.convex.site/payments/webhook`
    - Format: **Raw**
    - Click **Generate new secret**
    - Select all events and click **Create**
@@ -211,11 +211,150 @@ You should see:
 ### 6.2 Email with Resend
 
 1. **Create account** at [resend.com](https://resend.com)
-2. **Get API key** and **create webhook secret**:
+
+2. **Choose your email setup approach**:
+
+   **Option A: Quick Testing (No Domain Required)**
+   - Use Resend's built-in sandbox domain
+   - Sender email: `onboarding@resend.dev` (works immediately)
+   - Perfect for development and testing
+
+   **Option B: Custom Domain (Production Ready)**
+   - Verify your own domain for branded emails
+   - Go to Resend dashboard → **Domains**
+   - Click **Add Domain** and enter your domain (e.g., `yourdomain.com`)
+   - Add the required DNS records to your domain registrar:
+     - Copy the TXT, MX, and CNAME records shown
+     - Add them to your domain's DNS settings
+   - ⏳ **Wait for verification**: Status will show "Pending" → "Verified"
+     - **Time**: Can take anywhere from **a few minutes to several hours**
+     - **Depends on**: Your DNS provider's propagation time
+     - **Don't wait**: Use Option A (`onboarding@resend.dev`) while waiting
+   - Sender email: `noreply@yourdomain.com` (only after "Verified" status)
+
+3. **Get API key**:
+   - Go to Resend dashboard → **API Keys**
+   - Click **Create API Key**
+   - Give it a name and select **Full Access** permissions
+   - Copy the API key (starts with `re_`)
+
+4. **Set up webhook** (for email delivery tracking):
+   - Get your Convex HTTP actions URL from dashboard (ends in `.convex.site`)
+   - ⚠️ **Important**: Use `.convex.site` URL for webhooks, NOT `.convex.cloud`
+   - In Resend dashboard → **Webhooks** → **Add Endpoint**
+   - URL: `https://your-deployment.convex.site/resend-webhook`
+   - Enable all `email.*` events (delivered, bounced, complained, etc.)
+   - Click **Create**
+   - Copy the webhook secret (starts with `whsec_`)
+
+5. **Add to Convex environment variables**:
+   - Go to Convex dashboard → **Settings** → **Environment Variables**
+   - Add these required variables:
    ```bash
    RESEND_API_KEY=re_...
    RESEND_WEBHOOK_SECRET=whsec_...
+   
+   # Choose SENDER_EMAIL based on your setup:
+   SENDER_EMAIL=onboarding@resend.dev        # Option A: Testing (works immediately)
+   # OR
+   SENDER_EMAIL=noreply@yourdomain.com       # Option B: Custom domain (after verification)
+   
+   COMPANY_NAME=Your Company Name            # For email templates
    ```
+   - ⚠️ **Critical**: Resend runs as a Convex backend component, so ALL email environment variables must be in Convex dashboard, NOT in your local `.env.local` file
+   - ⚠️ **Domain Error Fix**: If you get "domain not verified" error, either:
+     - Use `onboarding@resend.dev` for testing, OR  
+     - Verify your custom domain in Resend dashboard first
+
+6. **Update `config.ts`**:
+   ```typescript
+   features: {
+     email: true,  // 👈 Enable email feature
+   },
+   services: {
+     resend: { enabled: true },  // 👈 Enable Resend service
+   }
+   ```
+
+7. **Test email functionality**:
+   
+   **🚀 Quick Test Steps:**
+   1. ✅ `npm run dev` → go to `/dashboard` (must be authenticated)
+   2. ✅ Find "Test Email Functionality" card
+   3. ✅ **Enter your Resend account email** (email you used to sign up for Resend)
+   4. ✅ Add subject/message, click "Send Test Email"
+   5. ✅ Look for green success toast message
+   6. ✅ **Check spam folder first** (sandbox emails usually go there)
+   7. ✅ Verify Status 200 in Resend dashboard → **Logs**
+   
+   **Detailed Instructions:**
+   - Start your dev server: `npm run dev`
+   - Navigate to `/dashboard` (authentication required)
+   - Look for "Test Email" form in dashboard
+   - **Important**: For sandbox testing (`onboarding@resend.dev`), you can ONLY send emails to the email address you used to sign up for Resend
+   - Enter that specific email address in the test form
+   - Send a test email with the test form in the dashboard and check:
+     - ✅ Resend dashboard → **Logs** shows Status 200 (success)
+     - ✅ Check your **inbox AND spam folder** (sandbox emails often go to spam)
+     - ✅ Verify webhook events in Convex logs: `npx convex logs`
+
+8. **What to expect for successful email testing**:
+   - ✅ **Form submission**: Button shows loading spinner, then green success toast: "Test email sent successfully! Check your inbox (and spam folder)."
+   - ✅ **Resend dashboard**: Status 200 in Logs with correct recipient email and request/response details
+   - ✅ **Email delivery**: Email appears in spam folder (normal for sandbox `onboarding@resend.dev` emails)
+   - ✅ **Convex logs**: Shows "Making a batch of 1 emails" message
+   - ⚠️ **Normal behavior**: Sandbox emails from `onboarding@resend.dev` typically go to spam - this is expected!
+   - 📧 **Email content**: Shows "Test Email from Kaizen" with your custom message
+
+9. **Email configuration notes**:
+   - **testMode**: Set to `false` in Resend config to send to real email addresses
+   - **Development**: Emails work in development mode with proper API keys
+   - **Rate limits**: Resend has generous limits but check their pricing page
+   - **Spam prevention**: Use verified domains for production to avoid spam folders
+   - **Sandbox limitations**: Can only send to your Resend account email address
+
+### 6.2.1 Troubleshooting Email Issues
+
+**"You can only send testing emails to your own email address" Error**:
+```
+Resend API error: {"statusCode":403,"message":"You can only send testing emails to your own email address (your-email@domain.com). To send emails to other recipients, please verify a domain..."}
+```
+**Solutions**:
+1. **Use your Resend account email**: Enter the exact email address you used to sign up for Resend
+2. **Alternative**: Verify a custom domain to send to any email address
+
+**"Domain not verified" Error**:
+```
+Resend API error: {"statusCode":403,"message":"The domain yourdomain.com is not verified..."}
+```
+**Solutions**:
+1. **Quick Fix**: Change `SENDER_EMAIL` to `onboarding@resend.dev` in Convex environment variables
+2. **Production Fix**: Verify your domain in Resend dashboard → **Domains** → Add DNS records
+   - ⚠️ **Important**: Domain verification is NOT instant
+   - Status shows "Pending" for **minutes to hours** depending on DNS provider
+   - Only use custom domain email AFTER status shows "Verified"
+
+**Email sent but not received**:
+1. **Check Resend dashboard**: Look for Status 200 in **Logs** section
+2. **Check spam folder**: Sandbox emails (`onboarding@resend.dev`) often go to spam - this is normal
+3. **Check correct email**: Make sure you're sending to your Resend account email
+4. **Gmail users**: Check "All Mail" folder and search for "onboarding@resend.dev"
+
+**Email not sending**:
+- Check Convex logs: `npx convex logs` (no --watch flag)
+- Verify all 4 environment variables are set in Convex dashboard
+- Restart `npx convex dev` after adding environment variables
+- Check Resend dashboard → **Logs** for delivery status
+
+**Form refreshing page instead of sending**:
+- Check browser console (F12) for JavaScript errors
+- Verify user is authenticated (email feature requires login)
+- Check that `api.sendEmails.sendTestEmailToAddress` is imported correctly
+
+**Webhook not working**:
+- Verify webhook URL uses `.convex.site` not `.convex.cloud`
+- Check webhook secret matches in both Resend and Convex
+- Test webhook in Resend dashboard → **Webhooks** → **Test**
 
 ### 6.3 Error Reporting & Monitoring
 
@@ -283,8 +422,8 @@ If you're testing payments locally, you need to expose your localhost to the int
 6. **Update Polar webhook URL**:
    - Go to Polar → **Settings** → **Webhooks**
    - Edit your webhook endpoint
-   - Change URL to: `https://your-convex-url.convex.cloud/payments/webhook`
-   - Note: Use your Convex HTTP actions URL, not your frontend ngrok URL
+   - Change URL to: `https://your-deployment.convex.site/payments/webhook`
+   - Note: Use your Convex HTTP actions URL (`.convex.site`), not your frontend ngrok URL
 
 ### 7.2 Test Payment Flow
 

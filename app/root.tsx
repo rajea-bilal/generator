@@ -14,6 +14,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import { Analytics } from "@vercel/analytics/react";
 import { config, initializeConfig, isFeatureEnabled, isServiceEnabled } from "../config";
+import { Toaster } from "sonner";
 
 // Initialize configuration
 initializeConfig();
@@ -86,6 +87,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <Analytics />
         {children}
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
       </body>
