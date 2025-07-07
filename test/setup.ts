@@ -2,7 +2,16 @@ import '@testing-library/jest-dom';
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
+  root: Element | Document | null = null;
+  rootMargin: string = '0px';
+  thresholds: ReadonlyArray<number> = [];
+  
+  constructor(public callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+    this.root = options?.root || null;
+    this.rootMargin = options?.rootMargin || '0px';
+    this.thresholds = options?.threshold ? (Array.isArray(options.threshold) ? options.threshold : [options.threshold]) : [];
+  }
+  
   observe() {
     return null;
   }
@@ -11,6 +20,9 @@ global.IntersectionObserver = class IntersectionObserver {
   }
   unobserve() {
     return null;
+  }
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
   }
 };
 

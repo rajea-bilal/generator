@@ -13,6 +13,7 @@ export const fullSaasConfig: AppConfig = {
     payments: true,
     convex: true,
     email: false,
+    monitoring: true,
   },
   services: {
     clerk: {
@@ -55,6 +56,7 @@ export const frontendOnlyConfig: AppConfig = {
     payments: false,
     convex: false,
     email: false,
+    monitoring: false,
   },
   services: {
     clerk: { enabled: false },
@@ -78,6 +80,7 @@ export const authOnlyConfig: AppConfig = {
     payments: false,
     convex: true,
     email: false,
+    monitoring: false,
   },
   services: {
     clerk: {
@@ -112,6 +115,7 @@ export const paymentsOnlyConfig: AppConfig = {
     payments: true,
     convex: true,
     email: false,
+    monitoring: false,
   },
   services: {
     clerk: { enabled: false },
@@ -144,6 +148,7 @@ export const staticConfig: AppConfig = {
     payments: false,
     convex: false,
     email: false,
+    monitoring: false,
   },
   services: {
     clerk: { enabled: false },

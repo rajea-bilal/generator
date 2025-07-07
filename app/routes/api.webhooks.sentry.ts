@@ -1,10 +1,15 @@
 import type { ActionFunctionArgs } from "react-router";
-import { json } from "react-router";
 import { createOpenStatusMonitor } from "../lib/openstatus";
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== "POST") {
-    return json({ error: "Method not allowed" }, { status: 405 });
+    throw new Response(
+      JSON.stringify({ error: "Method not allowed" }),
+      { 
+        status: 405,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
   }
   
   const payload = await request.json();
@@ -12,7 +17,13 @@ export async function action({ request }: ActionFunctionArgs) {
   // Verify Sentry webhook signature (recommended for production)
   // const signature = request.headers.get("sentry-hook-signature");
   // if (!verifySentrySignature(payload, signature)) {
-  //   return json({ error: "Invalid signature" }, { status: 401 });
+  //   throw new Response(
+  //     JSON.stringify({ error: "Invalid signature" }),
+  //     { 
+  //       status: 401,
+  //       headers: { "Content-Type": "application/json" }
+  //     }
+  //   );
   // }
   
   // Create incident in OpenStatus based on Sentry alert
@@ -24,5 +35,5 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
   
-  return json({ success: true });
+  return { success: true };
 }
