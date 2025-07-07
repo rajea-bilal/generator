@@ -12,7 +12,8 @@
     "routeIdToServerBundleId": {
       "routes/home": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/dashboard/index": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
-      "routes/dashboard/settings": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0"
+      "routes/dashboard/settings": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/dashboard/chat": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0"
     },
     "routes": {
       "root": {
@@ -50,6 +51,15 @@
         "parentId": "routes/dashboard/layout",
         "file": "app/routes/dashboard/settings.tsx",
         "path": "dashboard/settings",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/dashboard/chat": {
+        "id": "routes/dashboard/chat",
+        "parentId": "routes/dashboard/layout",
+        "file": "app/routes/dashboard/chat.tsx",
+        "path": "dashboard/chat",
         "config": {
           "runtime": "nodejs"
         }
@@ -95,6 +105,12 @@
         "parentId": "routes/dashboard/layout",
         "file": "routes/dashboard/settings.tsx",
         "path": "dashboard/settings"
+      },
+      "routes/dashboard/chat": {
+        "id": "routes/dashboard/chat",
+        "parentId": "routes/dashboard/layout",
+        "file": "routes/dashboard/chat.tsx",
+        "path": "dashboard/chat"
       }
     },
     "routeDiscovery": {
