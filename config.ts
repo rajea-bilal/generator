@@ -177,27 +177,12 @@ export const validateConfig = (): { valid: boolean; errors: string[] } => {
     }
   }
 
-  if (isFeatureEnabled('payments') && isServiceEnabled('polar')) {
-    if (!config.services.polar?.accessToken) {
-      errors.push('POLAR_ACCESS_TOKEN is required when payments are enabled');
-    }
-    if (!config.services.polar?.organizationId) {
-      errors.push('POLAR_ORGANIZATION_ID is required when payments are enabled');
-    }
-  }
-
   if (isFeatureEnabled('convex') && isServiceEnabled('convex')) {
     if (!config.services.convex?.deployment) {
       errors.push('CONVEX_DEPLOYMENT is required when convex is enabled');
     }
     if (!config.services.convex?.url) {
       errors.push('VITE_CONVEX_URL is required when convex is enabled');
-    }
-  }
-
-  if (isFeatureEnabled('email') && isServiceEnabled('resend')) {
-    if (!config.services.resend?.apiKey) {
-      errors.push('RESEND_API_KEY is required when email is enabled');
     }
   }
 
@@ -282,4 +267,4 @@ export const initializeConfig = () => {
   }
 };
 
-export default config; 
+export default config;
