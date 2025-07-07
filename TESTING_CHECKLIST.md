@@ -202,7 +202,7 @@ RESEND_WEBHOOK_SECRET=whsec_...
 ---
 
 ### 5. 🚀 Full SaaS Configuration
-**Config**: Enable all features
+**Config**: Enable all core features (no premium monitoring)
 
 ```typescript
 // config.ts
@@ -211,7 +211,7 @@ features: {
   payments: true,
   convex: true,
   email: true,
-  monitoring: true,
+  monitoring: false,  // Premium feature - see section 6
 }
 services: {
   clerk: { enabled: true },
@@ -219,8 +219,8 @@ services: {
   convex: { enabled: true },
   resend: { enabled: true },
   openai: { enabled: true },
-  sentry: { enabled: true },
-  openstatus: { enabled: true },
+  sentry: { enabled: false },    // Premium feature - see section 6
+  openstatus: { enabled: true }, // Free tier available
 }
 ui: {
   showPricing: true,
@@ -245,18 +245,14 @@ POLAR_WEBHOOK_SECRET=whsec_...
 CONVEX_DEPLOYMENT=your-deployment
 VITE_CONVEX_URL=https://your-deployment.convex.cloud
 
-# AI
+# AI Chat
 OPENAI_API_KEY=sk-...
 
 # Email
 RESEND_API_KEY=re_...
 RESEND_WEBHOOK_SECRET=whsec_...
 
-# Monitoring
-VITE_SENTRY_DSN=https://...
-SENTRY_ENVIRONMENT=development
-
-# Status Monitoring
+# Status Monitoring (Optional)
 OPENSTATUS_API_KEY=your-key
 OPENSTATUS_PROJECT_ID=your-project
 OPENSTATUS_WEBHOOK_URL=https://...
@@ -269,78 +265,85 @@ OPENSTATUS_WEBHOOK_URL=https://...
 - [ ] **Subscription Flow**: Sign-up → Pricing → Checkout → Success
 - [ ] **Protected Dashboard**: Requires auth and active subscription
 - [ ] **AI Chat**: OpenAI integration works in dashboard
-- [ ] **Error Monitoring**: Sentry captures errors
-- [ ] **Status Monitoring**: OpenStatus integration works
+- [ ] **Email Functionality**: Test email form works in dashboard
+- [ ] **Status Monitoring**: OpenStatus integration works (optional)
 - [ ] **Webhook Handlers**: All webhook endpoints functional
 - [ ] **User Management**: Settings page allows profile updates
 - [ ] **Subscription Management**: Users can view/cancel subscriptions
 
 ---
 
-## 🔍 Service-Specific Testing
+### 6. 💎 Premium Configuration with Error Monitoring
+**Config**: Full SaaS + Premium Sentry error monitoring (requires Convex Pro subscription)
 
-### Clerk Authentication
-**Setup**: Create test Clerk application
-- [ ] **Environment**: Set `VITE_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`
-- [ ] **Sign-up**: New user registration works
-- [ ] **Sign-in**: Existing user login works
-- [ ] **Protected Routes**: `/dashboard` requires authentication
-- [ ] **Sign-out**: User can sign out successfully
-- [ ] **Error Handling**: Invalid credentials show appropriate errors
+⚠️ **Prerequisites**: This configuration requires a **Convex Pro subscription** ($20/month minimum) for built-in exception reporting integration.
 
-### Polar.sh Payments
-**Setup**: Create test Polar organization
-- [ ] **Environment**: Set `POLAR_ACCESS_TOKEN`, `POLAR_ORGANIZATION_ID`, `POLAR_WEBHOOK_SECRET`
-- [ ] **Products**: Pricing page loads products from Polar
-- [ ] **Checkout**: Payment links redirect to Polar correctly
-- [ ] **Webhooks**: Subscription events are processed
-- [ ] **Success Flow**: Successful payment redirects to success page
-- [ ] **Error Handling**: Failed payments handled gracefully
+```typescript
+// config.ts
+features: {
+  auth: true,
+  payments: true,
+  convex: true,
+  email: true,
+  monitoring: true,  // 👈 Premium feature
+}
+services: {
+  clerk: { enabled: true },
+  polar: { enabled: true },
+  convex: { enabled: true },
+  resend: { enabled: true },
+  openai: { enabled: true },
+  sentry: { enabled: true },     // 👈 Premium feature
+  openstatus: { enabled: true },
+}
+ui: {
+  showPricing: true,
+  showDashboard: true,
+  showChat: true,
+  showAuth: true,
+}
+```
 
-### Convex Database
-**Setup**: Create test Convex deployment
-- [ ] **Environment**: Set `CONVEX_DEPLOYMENT` and `VITE_CONVEX_URL`
-- [ ] **Connection**: App connects to Convex successfully
-- [ ] **Real-time**: Data updates in real-time
-- [ ] **Mutations**: Create/update operations work
-- [ ] **Queries**: Data fetching works correctly
-- [ ] **Auth Integration**: Convex respects Clerk authentication
+#### Environment Variables Required:
+All variables from Full SaaS Configuration, plus:
 
-### OpenAI Integration
-**Setup**: Create OpenAI API key
-- [ ] **Environment**: Set `OPENAI_API_KEY`
-- [ ] **Chat Feature**: AI chat responds correctly
-- [ ] **Streaming**: Chat responses stream properly
-- [ ] **Error Handling**: API errors handled gracefully
-- [ ] **Rate Limiting**: Proper handling of rate limits
+```bash
+# Premium Error Monitoring (Convex Pro Required)
+VITE_SENTRY_DSN=https://...sentry.io/project-id
+SENTRY_ENVIRONMENT=development
+```
 
-### Sentry Monitoring
-**Setup**: Create Sentry project
-- [ ] **Environment**: Set `VITE_SENTRY_DSN`
-- [ ] **Error Capture**: Errors are sent to Sentry
-- [ ] **Source Maps**: Error stack traces are readable
-- [ ] **Performance**: Performance monitoring works
-- [ ] **Release Tracking**: Releases are tracked properly
+#### Premium Setup Steps:
+1. **Upgrade to Convex Pro**: In Convex dashboard → Billing → Upgrade to Pro
+2. **Create Sentry project**: At [sentry.io](https://sentry.io) → Choose "Generic" platform  
+3. **Configure in Convex**: Dashboard → Settings → Integrations → Exception Reporting
+4. **Add Sentry DSN**: Copy from Sentry project settings
 
-### Resend Email Service
-**Setup**: Create Resend account and configure Convex component
-- [ ] **Environment**: Set `RESEND_API_KEY` and `RESEND_WEBHOOK_SECRET`
-- [ ] **Send Email**: Email sending functionality works
-- [ ] **Webhooks**: Email event webhooks are processed at `/resend-webhook`
-- [ ] **Event Handling**: Email events (delivered, bounced, etc.) are logged
-- [ ] **Error Handling**: API errors handled gracefully
+#### Tests:
+- [ ] **Convex Pro Subscription**: Deployment upgraded to Pro tier
+- [ ] **Sentry Project**: Created and configured in Convex dashboard
+- [ ] **Automatic Error Reporting**: Backend errors automatically sent to Sentry
+- [ ] **Rich Error Metadata**: Errors include function name, request ID, user context
+- [ ] **Zero-Code Integration**: No manual error handling required
+- [ ] **Frontend Error Tracking**: Optional manual Sentry integration working
+- [ ] **All Full SaaS Tests**: Everything from section 5 still works
 
-### OpenStatus Monitoring
-**Setup**: Create OpenStatus project
-- [ ] **Environment**: Set `OPENSTATUS_API_KEY`, `OPENSTATUS_PROJECT_ID`, `OPENSTATUS_WEBHOOK_URL`
-- [ ] **Health Checks**: `/api/health` endpoint works
-- [ ] **Status Updates**: Status changes are reported
-- [ ] **Webhook Integration**: Status webhooks are received
+#### Premium Benefits:
+- 🔍 **Automatic error reporting** for all Convex functions
+- 📊 **Rich error metadata** (function name, runtime, user context)
+- 🚨 **Real-time alerts** for production issues
+- 📈 **Performance monitoring** and release tracking
+- 🛠️ **Zero-code setup** (no manual error wrapping)
+
+---
 
 ### Monitoring Service Testing
 
-#### Convex Built-in Exception Reporting
-**Setup**: Requires Convex Pro subscription
+#### 💎 Convex Built-in Exception Reporting (Premium Feature)
+**Setup**: Requires Convex Pro subscription ($20/month minimum)
+
+⚠️ **Important**: This is a **premium feature** that requires upgrading to Convex Pro. For testing this feature, see **Section 6: Premium Configuration**.
+
 - [ ] **Convex Pro**: Deployment upgraded to Pro tier
 - [ ] **Sentry Project**: Generic project created in Sentry
 - [ ] **Dashboard Configuration**: Exception reporting configured via Convex Dashboard → Integrations
