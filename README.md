@@ -98,6 +98,10 @@ See `config.example.ts` for more configuration examples.
 **Required for all configurations:**
 - Node.js 20+ 
 
+```bash
+nvm install 20
+```
+
 **Optional (based on enabled features):**
 - Clerk account for authentication
 - Convex account for database
