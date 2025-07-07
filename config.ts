@@ -140,7 +140,7 @@ export const config: AppConfig = {
   ui: {
     showPricing: false,    // Show pricing page and components
     showDashboard: true,  // Show dashboard routes
-    showChat: false,       // Show AI chat functionality
+    showChat: true,       // Show AI chat functionality
     showAuth: false,       // Show sign-in/sign-up routes
   },
 };

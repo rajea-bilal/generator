@@ -23,6 +23,6 @@ export default defineConfig({
     }),
   ].filter(Boolean),
   server: {
-    allowedHosts: ["test-trial-32.localcan.dev"],
+    allowedHosts: ["2b8c4787d264.ngrok.app"],
   },
 });
