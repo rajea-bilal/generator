@@ -56,6 +56,7 @@ export function meta({}: Route.MetaArgs) {
 export async function loader(args: Route.LoaderArgs) {
   const authEnabled = isFeatureEnabled("auth") && isServiceEnabled("clerk");
   const convexEnabled = isFeatureEnabled("convex") && isServiceEnabled("convex");
+  const paymentsEnabled = isFeatureEnabled("payments") && isServiceEnabled("polar");
 
   // 1. Auth: get userId if auth enabled, else null
   let userId: string | null = null;
@@ -71,7 +72,7 @@ export async function loader(args: Route.LoaderArgs) {
   if (convexEnabled) {
     const { fetchQuery, fetchAction } = await import("convex/nextjs");
 
-    [subscriptionData, plans] = await Promise.all([
+    const promises: Promise<any>[] = [
       userId
         ? fetchQuery(api.subscriptions.checkUserSubscriptionStatus, {
             userId,
@@ -80,8 +81,16 @@ export async function loader(args: Route.LoaderArgs) {
             return null;
           })
         : Promise.resolve(null),
-      fetchAction(api.subscriptions.getAvailablePlans),
-    ]);
+    ];
+
+    // Only fetch plans if payments are enabled
+    if (paymentsEnabled) {
+      promises.push(fetchAction(api.subscriptions.getAvailablePlans));
+    } else {
+      promises.push(Promise.resolve(null));
+    }
+
+    [subscriptionData, plans] = await Promise.all(promises);
   }
 
   return {

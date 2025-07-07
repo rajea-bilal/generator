@@ -11,6 +11,8 @@
     },
     "routeIdToServerBundleId": {
       "routes/home": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/sign-in": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/sign-up": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/dashboard/index": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/dashboard/settings": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/dashboard/chat": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0"
@@ -27,6 +29,24 @@
         "parentId": "root",
         "file": "app/routes/home.tsx",
         "index": true,
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/sign-in": {
+        "id": "routes/sign-in",
+        "parentId": "root",
+        "file": "app/routes/sign-in.tsx",
+        "path": "sign-in/*",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/sign-up": {
+        "id": "routes/sign-up",
+        "parentId": "root",
+        "file": "app/routes/sign-up.tsx",
+        "path": "sign-up/*",
         "config": {
           "runtime": "nodejs"
         }
@@ -88,6 +108,18 @@
         "parentId": "root",
         "file": "routes/home.tsx",
         "index": true
+      },
+      "routes/sign-in": {
+        "id": "routes/sign-in",
+        "parentId": "root",
+        "file": "routes/sign-in.tsx",
+        "path": "sign-in/*"
+      },
+      "routes/sign-up": {
+        "id": "routes/sign-up",
+        "parentId": "root",
+        "file": "routes/sign-up.tsx",
+        "path": "sign-up/*"
       },
       "routes/dashboard/layout": {
         "id": "routes/dashboard/layout",

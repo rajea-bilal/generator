@@ -2,6 +2,15 @@
 
 This guide walks you through setting up and running the Kaizen application on your local development machine.
 
+## 🆕 Recent Updates
+
+This guide has been enhanced with detailed steps for:
+- **Clerk JWT Templates** setup for proper Convex integration
+- **Detailed Polar.sh configuration** with all required API keys
+- **Local webhook testing** using ngrok for payment development
+- **Complete flow testing** with database verification steps
+- **Production deployment** considerations for environment variables
+
 ## Prerequisites
 
 Before getting started, make sure you have:
@@ -68,9 +77,10 @@ Convex provides your database, backend functions, and real-time features.
 
 3. **Copy the environment variables** that Convex provides:
    ```bash
-   # Add these to your .env file
+   # Add these to your .env.local file
    VITE_CONVEX_URL=https://your-deployment.convex.cloud
    CONVEX_DEPLOYMENT=your-deployment-name
+   NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
    ```
 
 ### 3.2 Authentication (Optional - if `auth: true`)
@@ -78,16 +88,28 @@ Convex provides your database, backend functions, and real-time features.
 1. **Create a Clerk account** at [clerk.dev](https://clerk.dev)
 
 2. **Create a new application**:
-   - Choose "React" as the framework
-   - Copy your keys
 
-3. **Add to `.env`**:
+   - Give it a name like "Kaizen App"
+   - Copy your API keys (Settings -> API Keys)
+
+3. **Set up JWT Templates for Convex integration**:
+   - In Clerk dashboard, go to **Configure** → **JWT Templates**
+   - Click **New template** → **Convex**
+   - Click **Save** (important - don't forget this step!)
+   - Copy the **Issuer** URL (looks like `https://your-app.clerk.accounts.dev`)
+
+4. **Add to `.env.local`**:
    ```bash
    VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
    CLERK_SECRET_KEY=sk_test_...
+   VITE_CLERK_FRONTEND_API_URL=https://your-app.clerk.accounts.dev
    ```
 
-4. **Update `config.ts`**:
+5. **Set up Convex environment variables**:
+   - Go to your Convex dashboard → **Settings** → **Environment Variables**
+   - Add: `VITE_CLERK_FRONTEND_API_URL` with the Issuer URL from step 3
+
+6. **Update `config.ts`**:
    ```typescript
    services: {
      convex: { enabled: true },
@@ -136,13 +158,52 @@ You should see:
 
 ### 6.1 Payments with Polar.sh
 
-1. **Create account** at [polar.sh](https://polar.sh)
-2. **Create organization** and products
+⚠️ **Important**: Use [sandbox.polar.sh](https://sandbox.polar.sh) for testing with fake money first!
+
+1. **Create account** at [sandbox.polar.sh](https://sandbox.polar.sh)
+
+2. **Create organization and products**:
+   - Create a new organization (e.g., "Kaizen Test")
+   - Click **Products** → **Create Product**
+   - Set up a subscription product with pricing
+   - Save the product
+
 3. **Get API credentials**:
+   
+   **Access Token:**
+   - Go to **Settings** → **Developers**
+   - Click **New Token**
+   - Select all permissions, set no expiration
+   - Copy the token
+   
+   **Organization ID:**
+   - Go to **Settings** → **General**
+   - Copy the Organization ID at the top
+   
+   **Webhook Secret:**
+   - Get your Convex HTTP actions URL from dashboard
+   - Go to **Settings** → **Webhooks** 
+   - Click **Add Endpoint**
+   - URL: `https://your-convex-url.convex.cloud/payments/webhook`
+   - Format: **Raw**
+   - Click **Generate new secret**
+   - Select all events and click **Create**
+   - Copy the webhook secret
+
+4. **Add to Convex environment variables**:
+   - Go to Convex dashboard → **Settings** → **Environment Variables**
+   - Add these three variables:
    ```bash
    POLAR_ACCESS_TOKEN=polar_...
    POLAR_ORGANIZATION_ID=org_...
    POLAR_WEBHOOK_SECRET=whsec_...
+   ```
+
+5. **Update `config.ts`**:
+   ```typescript
+   services: {
+     polar: { enabled: true },  // 👈 Enable Polar
+   }
    ```
 
 ### 6.2 Email with Resend
@@ -177,9 +238,69 @@ For additional frontend error tracking:
 VITE_SENTRY_DSN=https://your-dsn@sentry.io/project-id
 ```
 
-## Step 7: Development Workflow
+## Step 7: Local Webhook Testing (Required for Payments)
 
-### 7.1 Running Commands
+If you're testing payments locally, you need to expose your localhost to the internet so Polar can send webhooks.
+
+### 7.1 Install and Setup ngrok
+
+1. **Install ngrok**: [Download from ngrok.com](https://ngrok.com/) or:
+   ```bash
+   # macOS with Homebrew
+   brew install ngrok
+   
+   # Or download directly
+   ```
+
+2. **Expose your local server**:
+   ```bash
+   # Replace 5173 with your actual port
+   ngrok http 5173
+   ```
+
+3. **Copy the public URL** (e.g., `https://abc123.ngrok.io`)
+
+4. **Update allowed hosts** in `vite.config.ts`:
+   ```typescript
+   export default defineConfig({
+     server: {
+       allowedHosts: [
+         'abc123.ngrok.io',  // Your ngrok URL without https://
+       ],
+     },
+     // ... rest of config
+   });
+   ```
+
+5. **Update environment variables**:
+   - In Convex dashboard → **Settings** → **Environment Variables**
+   - Add: `FRONTEND_URL` with your ngrok URL (no trailing slash)
+   - Example: `https://abc123.ngrok.io`
+
+6. **Update Polar webhook URL**:
+   - Go to Polar → **Settings** → **Webhooks**
+   - Edit your webhook endpoint
+   - Change URL to: `https://your-ngrok-url.ngrok.io/payments/webhook`
+   - Note: Use your Convex HTTP actions URL, not your frontend ngrok URL
+
+### 7.2 Test Payment Flow
+
+1. **Start your dev server** and ngrok
+2. **Visit your ngrok URL** in browser
+3. **Sign up/login** with a test account
+4. **Go to pricing page** and click subscribe
+5. **Use test credit card**: `4242 4242 4242 4242`
+6. **Complete payment** and verify:
+   - Redirected to success page
+   - User has access to dashboard
+   - Payment recorded in Convex data
+   - Webhook received successfully
+
+⚠️ **Remember**: When deploying to production, replace ngrok URL with your actual domain!
+
+## Step 8: Development Workflow
+
+### 8.1 Running Commands
 
 ```bash
 # Development server
@@ -198,7 +319,7 @@ npm run test
 npm run test:e2e
 ```
 
-### 7.2 File Structure
+### 8.2 File Structure
 
 ```
 ├── app/                    # React Router application
@@ -213,7 +334,7 @@ npm run test:e2e
 └── guides/               # Setup documentation
 ```
 
-### 7.3 Common Development Tasks
+### 8.3 Common Development Tasks
 
 **Add a new page:**
 1. Create file in `app/routes/`
@@ -230,9 +351,9 @@ npm run test:e2e
 2. Follow existing patterns
 3. Add to exports if reusable
 
-## Step 8: Testing Your Setup
+## Step 9: Testing Your Setup
 
-### 8.1 Configuration Validation
+### 9.1 Configuration Validation
 
 Run the development server and check the console for:
 
@@ -244,15 +365,56 @@ Run the development server and check the console for:
 ✅ Monitoring: Backend via Convex built-in
 ```
 
-### 8.2 Feature Testing
+### 9.2 Complete Flow Testing
 
-- [ ] **Homepage**: Loads without errors
-- [ ] **Authentication**: Sign up/sign in works (if enabled)
-- [ ] **Dashboard**: Shows user data and real-time updates
-- [ ] **AI Chat**: Responds to messages (if OpenAI configured)
-- [ ] **Error Handling**: Errors are logged properly
+**Test the full authentication + payment flow:**
 
-### 8.3 Error Reporting Testing
+1. **Homepage Test**:
+   - [ ] Loads without errors
+   - [ ] Navigation works
+   - [ ] Login/Sign up buttons visible (if auth enabled)
+
+2. **Authentication Flow**:
+   - [ ] Click "Sign up" → form loads
+   - [ ] Create test account (use any email + password)
+   - [ ] Verify you're redirected to dashboard
+   - [ ] Check Convex dashboard → **Data** → **users** table for your user
+
+3. **Payment Flow** (if payments enabled):
+   - [ ] Navigate to pricing page
+   - [ ] Click "Subscribe" on a plan
+   - [ ] Redirected to Polar checkout
+   - [ ] Use test card: `4242 4242 4242 4242`
+   - [ ] Fill in random details (name, address)
+   - [ ] Complete payment successfully
+   - [ ] Verify redirect to success page
+   - [ ] Check you have dashboard access
+
+4. **Database Verification**:
+   - [ ] In Convex dashboard → **Data** → **subscriptions**
+   - [ ] Find your subscription record with `status: "active"`
+   - [ ] User record should show subscription details
+
+5. **AI Chat Test** (if OpenAI enabled):
+   - [ ] Go to dashboard → **Chat** tab
+   - [ ] Send test message: "Hello, what is 2 + 2?"
+   - [ ] Verify AI responds correctly
+
+6. **Subscription Management**:
+   - [ ] Go to dashboard → **Settings**
+   - [ ] Click "Manage Subscription"
+   - [ ] Verify redirected to Polar customer portal
+   - [ ] Test cancelling subscription
+   - [ ] Check database shows updated status
+
+### 9.3 Error & Edge Case Testing
+
+- [ ] **Invalid credentials**: Test wrong password
+- [ ] **Network errors**: Disconnect wifi during payment
+- [ ] **Webhook testing**: Check Convex logs for webhook events
+- [ ] **Multiple subscriptions**: Test upgrading/downgrading plans
+
+### 9.4 Error Reporting Testing
 
 If you enabled monitoring with Convex Pro:
 
