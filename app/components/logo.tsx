@@ -48,7 +48,7 @@ export const LogoIcon = ({
 }) => {
   return (
     <img
-      src="/kaizen.png"
+      src="/kaizen-no-bg.png"
       className={cn("!w-16 !h-16", className)}
     />
   );
