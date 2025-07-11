@@ -16,8 +16,7 @@ export function meta({}: Route.MetaArgs) {
     "This powerful starter kit is designed to help you launch your SAAS application quickly and efficiently.";
   const keywords = "Kaizen, SAAS, Launch, Quickly, Efficiently";
   const siteUrl = "https://www.kaizen.codeandcreed.tech/";
-  const imageUrl =
-    "https://jdj14ctwppwprnqu.public.blob.vercel-storage.com/rsk-image-FcUcfBMBgsjNLo99j3NhKV64GT2bQl.png";
+  const imageUrl = "/kaizen-no-bg.png";
 
   return [
     { title },
