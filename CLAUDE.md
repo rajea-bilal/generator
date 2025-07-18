@@ -14,18 +14,6 @@ Kaizen is a modern full-stack SaaS starter template built with React Router v7, 
 - `npm run start` - Start production server
 - `npm run typecheck` - Run TypeScript checks with route generation
 
-### Testing
-- `npm run test` - Run unit tests with Vitest
-- `npm run test:ui` - Run Vitest with UI
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage
-- `npm run test:e2e` - Run E2E tests with Playwright
-- `npm run test:e2e:ui` - Run E2E tests with Playwright UI
-- `npm run test:all` - Run all tests (unit + E2E)
-
-### Single Test Execution
-- `npm run test -- path/to/test.test.ts` - Run specific unit test
-- `npm run test:e2e -- --grep "test name"` - Run specific E2E test
 
 ## Configuration Architecture
 
@@ -72,11 +60,6 @@ export const config: AppConfig = {
 - **Graceful degradation** when services are disabled
 - **Webhook event handling** for Polar.sh payments
 
-### Testing Strategy
-- **Unit tests** with Vitest and React Testing Library
-- **E2E tests** with Playwright across multiple browsers
-- **Component testing** with jsdom environment
-- **Mock setup** for browser APIs in `test/setup.ts`
 
 ## Database Schema (Convex)
 
@@ -122,7 +105,6 @@ export const config: AppConfig = {
 1. **Check feature flags** in `config.ts` to understand enabled features
 2. **Verify environment variables** for active services
 3. **Run typecheck** to ensure TypeScript compliance
-4. **Check test coverage** for modified components
 
 ### Code Style Requirements
 - **TypeScript-first** - All code must be properly typed
@@ -130,11 +112,6 @@ export const config: AppConfig = {
 - **Conditional feature logic** - Respect feature flags throughout
 - **Component composition** - Use shadcn/ui patterns for consistency
 
-### Testing Requirements
-- **Unit tests** for all utility functions and components
-- **E2E tests** for critical user flows
-- **Feature flag testing** - Test both enabled and disabled states
-- **Cross-browser testing** with Playwright
 
 ## Common Patterns
 
@@ -191,7 +168,3 @@ const clerkConfig = getServiceConfig('clerk');
 - Run `npm install --legacy-peer-deps` for dependency resolution
 - Check that required services are running (Convex dev server)
 
-### Testing Issues
-- Verify test setup in `test/setup.ts` for browser API mocks
-- Check Playwright configuration for correct base URL
-- Ensure development server is running for E2E tests
