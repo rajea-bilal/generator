@@ -11,6 +11,7 @@ const getMenuItems = () => {
   const items = [
   { name: "Home", href: "#hero" },
   { name: "Features", href: "#features" },
+  { name: "Changelog", href: "/changelog" },
   ];
 
   // Only show pricing if payments are enabled
@@ -60,6 +61,9 @@ export const Navbar = ({
           block: "start",
         });
       }
+    } else {
+      // For regular links, navigate using the router
+      window.location.href = href;
     }
     setMenuState(false); // Close mobile menu
   }, []);
