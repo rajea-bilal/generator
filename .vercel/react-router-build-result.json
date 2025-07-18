@@ -67,9 +67,9 @@
     }
   },
   "reactRouterConfig": {
-    "appDirectory": "/Users/our-rahmaan/Desktop/kaizen/app",
+    "appDirectory": "/Users/our-rahmaan/conductor/repo/kaizen/tashkent/app",
     "basename": "/",
-    "buildDirectory": "/Users/our-rahmaan/Desktop/kaizen/build",
+    "buildDirectory": "/Users/our-rahmaan/conductor/repo/kaizen/tashkent/build",
     "future": {
       "unstable_middleware": false,
       "unstable_optimizeDeps": false,

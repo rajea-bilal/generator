@@ -16,8 +16,6 @@ This directory contains comprehensive setup guides for configuring and deploying
 ### Monitoring & Observability
 - **[Monitoring Setup](./monitoring-setup.md)** - Set up error reporting (Sentry) and uptime monitoring (OpenStatus)
 
-### Testing & Quality Assurance
-- **[Testing Guide](./testing.md)** - Write and run unit tests and E2E tests with Vitest and Playwright
 
 ## 🔧 Configuration Quick Reference
 
@@ -81,15 +79,6 @@ The Kaizen boilerplate supports these feature combinations:
 
 **When to use:** If you've enabled `monitoring: true` in your configuration.
 
-### [Testing Guide](./testing.md)
-**What it covers:**
-- Unit testing with Vitest and React Testing Library
-- E2E testing with Playwright
-- Testing different configuration scenarios
-- CI/CD testing setup
-- Debugging test failures
-
-**When to use:** When setting up testing for your application or writing new tests.
 
 ## 🎯 Quick Start by Use Case
 
@@ -120,7 +109,6 @@ The Kaizen boilerplate supports these feature combinations:
 3. [Email Setup](./email-setup.md) (if using email)
 4. [Monitoring Setup](./monitoring-setup.md)
 5. [Deploy to Production](./deploy-to-production.md)
-6. [Testing Guide](./testing.md)
 
 ## 🔗 External Resources
 

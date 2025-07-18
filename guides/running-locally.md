@@ -454,11 +454,6 @@ npm run typecheck
 # Build for production
 npm run build
 
-# Run tests
-npm run test
-
-# Run E2E tests
-npm run test:e2e
 ```
 
 ### 8.2 File Structure
@@ -556,22 +551,6 @@ Run the development server and check the console for:
 - [ ] **Webhook testing**: Check Convex logs for webhook events
 - [ ] **Multiple subscriptions**: Test upgrading/downgrading plans
 
-### 9.4 Error Reporting Testing
-
-If you enabled monitoring with Convex Pro:
-
-1. **Create a test error** in a Convex function:
-   ```typescript
-   // In convex/test.ts
-   export const testError = mutation({
-     handler: async () => {
-       throw new Error("Test error for local development");
-     }
-   });
-   ```
-
-2. **Call it from your app** and check Sentry for the error
-3. **Remove the test function** when done
 
 ## Troubleshooting
 
