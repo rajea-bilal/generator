@@ -1,3 +1,6 @@
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router";
+import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/changelog";
 
 export function meta({}: Route.MetaArgs) {
@@ -40,6 +43,12 @@ export default function Changelog() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <div className="mb-12">
+          <Button asChild variant="ghost" size="sm" className="mb-6">
+            <Link to="/" className="flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </Link>
+          </Button>
           <h1 className="text-4xl font-bold text-foreground mb-4">Changelog</h1>
           <p className="text-lg text-muted-foreground">
             Keep track of all the latest updates, improvements, and new features.

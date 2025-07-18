@@ -11,6 +11,7 @@
     },
     "routeIdToServerBundleId": {
       "routes/home": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/changelog": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/dashboard/index": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/dashboard/settings": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/dashboard/chat": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0"
@@ -27,6 +28,15 @@
         "parentId": "root",
         "file": "app/routes/home.tsx",
         "index": true,
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/changelog": {
+        "id": "routes/changelog",
+        "parentId": "root",
+        "file": "app/routes/changelog.tsx",
+        "path": "changelog",
         "config": {
           "runtime": "nodejs"
         }
@@ -67,9 +77,9 @@
     }
   },
   "reactRouterConfig": {
-    "appDirectory": "/Users/our-rahmaan/conductor/repo/kaizen/tashkent/app",
+    "appDirectory": "/Users/our-rahmaan/conductor/repo/kaizen/boston/app",
     "basename": "/",
-    "buildDirectory": "/Users/our-rahmaan/conductor/repo/kaizen/tashkent/build",
+    "buildDirectory": "/Users/our-rahmaan/conductor/repo/kaizen/boston/build",
     "future": {
       "unstable_middleware": false,
       "unstable_optimizeDeps": false,
@@ -88,6 +98,12 @@
         "parentId": "root",
         "file": "routes/home.tsx",
         "index": true
+      },
+      "routes/changelog": {
+        "id": "routes/changelog",
+        "parentId": "root",
+        "file": "routes/changelog.tsx",
+        "path": "changelog"
       },
       "routes/dashboard/layout": {
         "id": "routes/dashboard/layout",
