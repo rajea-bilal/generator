@@ -1,6 +1,6 @@
-# Kaizen Development Rules for Claude Code
+# Kaizen Best Practices for Claude Code
 
-This file contains comprehensive development rules and guidelines specifically for Claude Code when working with the Kaizen SaaS starter template.
+This file contains comprehensive best practices and guidelines specifically for Claude Code when working with the Kaizen SaaS starter template (React Router v7 + Convex + Modern Stack).
 
 ## 🚨 CRITICAL PROJECT PATTERNS
 
@@ -338,4 +338,4 @@ function Header() {
 
 ---
 
-*These rules ensure consistent, maintainable, and feature-flag-aware development in the Kaizen SaaS template.*
+*These best practices ensure consistent, maintainable, and feature-flag-aware development in the Kaizen SaaS template using React Router v7 + Convex + Modern Stack.*
