@@ -214,3 +214,77 @@
     offset-distance: 100%;
   }
 }
+
+/* Performance Optimizations */
+
+/* Critical rendering optimizations */
+* {
+  /* Reduce paint operations */
+  box-sizing: border-box;
+}
+
+/* Navbar Performance Optimizations */
+nav > div {
+  /* Use transform for better performance */
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  /* Hardware acceleration */
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize backdrop blur performance */
+.backdrop-blur-sm {
+  /* Use a lighter blur for better performance */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Remove expensive backdrop blur on mobile */
+@media (max-width: 768px) {
+  .backdrop-blur-sm {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: var(--background);
+  }
+}
+
+/* Optimize animations */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-ping {
+    animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  
+  /* Use transform instead of changing properties */
+  .transition-all {
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+  }
+}
+
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Image loading optimizations */
+img {
+  /* Faster image decoding */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Lazy loading hint */
+img[loading="lazy"] {
+  content-visibility: auto;
+}

@@ -1,7 +1,8 @@
 import React from "react";
+import { OptimizedLogo } from "../ui/optimized-image";
 
 export default function Resend(props: React.ImgHTMLAttributes<HTMLImageElement>) {
   return (
-    <img src="/resend-icon-black.png" alt="Resend logo" className="h-8 w-auto" {...props} />
+    <OptimizedLogo src="/resend-icon-black.png" alt="Resend logo" className="h-8 w-auto" {...props} />
   );
 } 

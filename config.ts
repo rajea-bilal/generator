@@ -244,26 +244,29 @@ export const initializeConfig = () => {
     }
   }
 
-  // Log enabled features in development
+  // Log enabled features in development (deferred to avoid blocking)
   if (isDevelopment) {
-    console.log('🔧 App Configuration:');
-    console.log('   Features:', Object.entries(config.features)
-      .filter(([, enabled]) => enabled)
-      .map(([name]) => name)
-      .join(', ') || 'None');
-    console.log('   Services:', Object.entries(config.services)
-      .filter(([, service]) => service?.enabled)
-      .map(([name]) => name)
-      .join(', ') || 'None');
-      
-    // Log Sentry configuration details
-    if (isServiceEnabled('sentry')) {
-      const sentryConfig = getServiceConfig('sentry');
-      console.log('📊 Sentry Configuration:');
-      console.log(`   Frontend: ${sentryConfig?.dsn ? '✅ Enabled' : '❌ No DSN'}`);
-      console.log(`   Convex Backend: Use built-in exception reporting via Dashboard`);
-      console.log(`   Guide: https://docs.convex.dev/production/integrations/exception-reporting`);
-    }
+    // Use setTimeout to avoid blocking initial render
+    setTimeout(() => {
+      console.log('🔧 App Configuration:');
+      console.log('   Features:', Object.entries(config.features)
+        .filter(([, enabled]) => enabled)
+        .map(([name]) => name)
+        .join(', ') || 'None');
+      console.log('   Services:', Object.entries(config.services)
+        .filter(([, service]) => service?.enabled)
+        .map(([name]) => name)
+        .join(', ') || 'None');
+        
+      // Log Sentry configuration details
+      if (isServiceEnabled('sentry')) {
+        const sentryConfig = getServiceConfig('sentry');
+        console.log('📊 Sentry Configuration:');
+        console.log(`   Frontend: ${sentryConfig?.dsn ? '✅ Enabled' : '❌ No DSN'}`);
+        console.log(`   Convex Backend: Use built-in exception reporting via Dashboard`);
+        console.log(`   Guide: https://docs.convex.dev/production/integrations/exception-reporting`);
+      }
+    }, 0);
   }
 };
 

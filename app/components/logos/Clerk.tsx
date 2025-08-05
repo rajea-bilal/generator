@@ -1,7 +1,8 @@
 import React from "react";
+import { OptimizedLogo } from "../ui/optimized-image";
 
 export default function ClerkLogo(props: React.ImgHTMLAttributes<HTMLImageElement>) {
   return (
-    <img src="/clerk.png" alt="Clerk logo" className="h-8 !w-auto" {...props} />
+    <OptimizedLogo src="/clerk.png" alt="Clerk logo" className="h-8 !w-auto" {...props} />
   );
 } 

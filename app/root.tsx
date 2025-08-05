@@ -16,15 +16,27 @@ import { Analytics } from "@vercel/analytics/react";
 import { config, initializeConfig, isFeatureEnabled, isServiceEnabled } from "../config";
 import { Toaster } from "sonner";
 
-// Initialize configuration
-initializeConfig();
+// Defer configuration initialization
+let configInitialized = false;
+const ensureConfigInitialized = () => {
+  if (!configInitialized) {
+    initializeConfig();
+    configInitialized = true;
+  }
+};
 
-// Conditionally create Convex client
-const convex = isFeatureEnabled('convex') && config.services.convex?.url 
-  ? new ConvexReactClient(config.services.convex.url)
-  : null;
+// Lazy initialize Convex client
+let convex: ConvexReactClient | null = null;
+const getConvexClient = () => {
+  ensureConfigInitialized();
+  if (!convex && isFeatureEnabled('convex') && config.services.convex?.url) {
+    convex = new ConvexReactClient(config.services.convex.url);
+  }
+  return convex;
+};
 
 export async function loader(args: Route.LoaderArgs) {
+  ensureConfigInitialized();
   if (isFeatureEnabled('auth') && isServiceEnabled('clerk')) {
     const { rootAuthLoader } = await import("@clerk/react-router/ssr.server");
     return rootAuthLoader(args);
@@ -47,18 +59,26 @@ export const links: Route.LinksFunction = () => [
     crossOrigin: "anonymous",
   },
   
-  // Font with display=swap for performance
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-  
-  // Preload critical assets
+  // Optimized font loading - only load commonly used weights
   {
     rel: "preload",
-    href: "/kaizen.png",
+    href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+    as: "style",
+  },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+    media: "print",
+    onload: "this.media='all'",
+  },
+  
+  // Preload critical images with proper types
+  {
+    rel: "preload",
+    href: "/kaizen-no-bg.png",
     as: "image",
-    type: "image/jpg",
+    type: "image/png",
+    fetchPriority: "high",
   },
   {
     rel: "preload",
@@ -96,18 +116,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
+  ensureConfigInitialized();
   const authEnabled = isFeatureEnabled('auth') && isServiceEnabled('clerk');
-  const convexEnabled = isFeatureEnabled('convex') && convex;
+  const convexClient = getConvexClient();
+  const convexEnabled = isFeatureEnabled('convex') && convexClient;
 
   // Case 1: Both auth and convex enabled
-  if (authEnabled && convexEnabled && convex) {
+  if (authEnabled && convexEnabled && convexClient) {
   return (
     <ClerkProvider
       loaderData={loaderData}
       signUpFallbackRedirectUrl="/"
       signInFallbackRedirectUrl="/"
     >
-      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+      <ConvexProviderWithClerk client={convexClient} useAuth={useAuth}>
         <Outlet />
       </ConvexProviderWithClerk>
     </ClerkProvider>
@@ -128,9 +150,9 @@ export default function App({ loaderData }: Route.ComponentProps) {
   }
 
   // Case 3: Only convex enabled
-  if (!authEnabled && convexEnabled && convex) {
+  if (!authEnabled && convexEnabled && convexClient) {
     return (
-      <ConvexProvider client={convex}>
+      <ConvexProvider client={convexClient}>
         <Outlet />
       </ConvexProvider>
     );

@@ -6,6 +6,7 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { config, isFeatureEnabled } from "../../../config";
+import { OptimizedLogo } from "~/components/ui/optimized-image";
 
 const getMenuItems = () => {
   const items = [
@@ -33,22 +34,39 @@ export const Navbar = ({
   const menuItems = getMenuItems();
 
   React.useEffect(() => {
+    // Use RAF for smooth scroll updates
+    let rafId: number | null = null;
+    
     const handleScroll = () => {
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
-      const scrolled = scrollY > 20;
-      setIsScrolled(scrolled);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        const shouldBeScrolled = scrollY > 20;
+        
+        // Only update state if it actually changed
+        setIsScrolled(prev => {
+          if (prev !== shouldBeScrolled) {
+            return shouldBeScrolled;
+          }
+          return prev;
+        });
+      });
     };
     
     // Set initial scroll state
     handleScroll();
     
-    // Add multiple event listeners for better compatibility
+    // Add single event listener with passive flag
     window.addEventListener("scroll", handleScroll, { passive: true });
-    document.addEventListener("scroll", handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      document.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
     };
   }, []);
 
@@ -94,9 +112,9 @@ export const Navbar = ({
       >
         <div
           className={cn(
-            "mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12",
+            "mx-auto mt-2 max-w-6xl px-6 lg:px-12",
             isScrolled &&
-              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5 shadow-lg"
+              "bg-background/95 max-w-4xl rounded-2xl border backdrop-blur-sm lg:px-5 shadow-lg transition-[max-width,background-color,backdrop-filter] duration-150"
           )}
         >
           {/* Temporary debug indicator */}
@@ -111,7 +129,7 @@ export const Navbar = ({
                 className="flex items-center space-x-2 font-semibold text-xl text-muted-foreground"
                 prefetch="viewport"
               >
-                <img src="/kaizen-no-bg.png" alt="Kaizen Logo" className="w-18 h-18" />
+                <OptimizedLogo src="/kaizen-no-bg.png" alt="Kaizen Logo" className="w-18 h-18" />
               </Link>
 
               <button

@@ -1,14 +1,17 @@
 import { isFeatureEnabled, isServiceEnabled } from "../../config";
-import ContentSection from "~/components/homepage/content";
-import CoreFeaturesSection from "~/components/homepage/core-features";
-import { ConvexComparison } from "~/components/homepage/convex-comparison";
-import Footer from "~/components/homepage/footer";
 import Integrations from "~/components/homepage/integrations";
-import Pricing from "~/components/homepage/pricing";
-import Team from "~/components/homepage/team";
-import FAQ from "~/components/homepage/faq";
 import { api } from "../../convex/_generated/api";
 import type { Route } from "./+types/home";
+import { Suspense, lazy } from 'react';
+import { ContentSkeleton, FeatureSkeleton, PricingSkeleton } from '~/components/ui/skeleton';
+
+// Lazy load components below the fold
+const ContentSection = lazy(() => import("~/components/homepage/content"));
+const CoreFeaturesSection = lazy(() => import("~/components/homepage/core-features"));
+const ConvexComparison = lazy(() => import("~/components/homepage/convex-comparison").then(m => ({ default: m.ConvexComparison })));
+const Pricing = lazy(() => import("~/components/homepage/pricing"));
+const FAQ = lazy(() => import("~/components/homepage/faq"));
+const Footer = lazy(() => import("~/components/homepage/footer"));
 
 export function meta({}: Route.MetaArgs) {
   const title = "Kaizen - Launch Your SAAS Quickly";
@@ -103,12 +106,24 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <>
       <Integrations loaderData={loaderData} />
-      <ContentSection />
-      <CoreFeaturesSection />
-      <ConvexComparison />
-      <Pricing loaderData={loaderData} />
-      <FAQ />
-      <Footer />
+      <Suspense fallback={<ContentSkeleton />}>
+        <ContentSection />
+      </Suspense>
+      <Suspense fallback={<div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6"><FeatureSkeleton /><FeatureSkeleton /><FeatureSkeleton /></div>}>
+        <CoreFeaturesSection />
+      </Suspense>
+      <Suspense fallback={<ContentSkeleton />}>
+        <ConvexComparison />
+      </Suspense>
+      <Suspense fallback={<div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6"><PricingSkeleton /><PricingSkeleton /></div>}>
+        <Pricing loaderData={loaderData} />
+      </Suspense>
+      <Suspense fallback={<ContentSkeleton />}>
+        <FAQ />
+      </Suspense>
+      <Suspense fallback={<div className="h-32 bg-muted" />}>
+        <Footer />
+      </Suspense>
     </>
   );
 }
