@@ -6,7 +6,6 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { config, isFeatureEnabled } from "../../../config";
-import { OptimizedLogo } from "~/components/ui/optimized-image";
 
 const getMenuItems = () => {
   const items = [
@@ -129,7 +128,7 @@ export const Navbar = ({
                 className="flex items-center space-x-2 font-semibold text-xl text-muted-foreground"
                 prefetch="viewport"
               >
-                <OptimizedLogo src="/kaizen-no-bg.png" alt="Kaizen Logo" className="w-18 h-18" />
+                <img src="/kaizen-no-bg.png" alt="Kaizen Logo" className="w-18 h-18" />
               </Link>
 
               <button

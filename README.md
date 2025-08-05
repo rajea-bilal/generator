@@ -195,7 +195,7 @@ FRONTEND_URL=http://localhost:5173  # for development
 6. Start the development server:
 
 ```bash
-npm run dev
+npm run dev --loglevel=error
 ```
 
 ## Building for Production
