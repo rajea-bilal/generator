@@ -69,7 +69,7 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
     media: "print",
-    onload: "this.media='all'",
+    onLoad: "this.media='all'",
   },
   
   // Preload critical images with proper types
