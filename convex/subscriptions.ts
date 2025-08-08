@@ -275,19 +275,45 @@ export const fetchUserSubscription = query({
 export const handleWebhookEvent = mutation({
   args: {
     body: v.any(),
+    webhookId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Extract event type from webhook payload
     const eventType = args.body.type;
+    // Polar sends the unique event ID in the `webhook-id` header, not in the body
+    const webhookId = args.webhookId || args.body.id;
 
-    // Store webhook event
-    await ctx.db.insert("webhookEvents", {
+    // Check if this webhook has already been processed (deduplication)
+    const existingWebhook = webhookId
+      ? await ctx.db
+      .query("webhookEvents")
+      .withIndex("by_webhook_id", (q) => q.eq("webhookId", webhookId))
+      .first()
+      : null;
+
+    if (existingWebhook) {
+      console.log("⏭️ Webhook already processed, skipping:", webhookId || "unknown_id");
+      return { success: true, message: "Webhook already processed", alreadyProcessed: true };
+    }
+
+    // Store webhook event with processing status
+    const webhookEventId = await ctx.db.insert("webhookEvents", {
+      id: args.body.id,
       type: eventType,
       polarEventId: args.body.data.id,
       createdAt: args.body.data.created_at,
       modifiedAt: args.body.data.modified_at || args.body.data.created_at,
       data: args.body.data,
+      processed: false,
+      created_at: Date.now(),
+      // Deduplication fields
+      webhookId: webhookId,
+      processingStatus: "processing",
+      processedAt: undefined,
+      errorMessage: undefined,
     });
+
+    try {
 
     switch (eventType) {
       case "subscription.created":
@@ -429,6 +455,28 @@ export const handleWebhookEvent = mutation({
         console.log(`Unhandled event type: ${eventType}`);
         break;
     }
+
+    // Mark webhook as successfully processed
+    await ctx.db.patch(webhookEventId, {
+      processingStatus: "completed",
+      processedAt: Date.now(),
+      processed: true,
+    });
+
+    console.log("✅ Webhook processed successfully:", webhookId);
+    return { success: true, message: "Webhook processed successfully" };
+
+    } catch (error) {
+      // Mark webhook as failed
+      await ctx.db.patch(webhookEventId, {
+        processingStatus: "failed",
+        processedAt: Date.now(),
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+
+      console.error("❌ Webhook processing failed:", error);
+      throw error; // Re-throw to trigger Convex retry logic
+    }
   },
 });
 
@@ -481,9 +529,17 @@ export const paymentWebhook = httpAction(async (ctx, request) => {
     const body = JSON.parse(rawBody);
     console.log("🎯 Webhook event type:", body.type);
 
+    // Get webhook ID from headers for deduplication
+    const headers: Record<string, string> = {};
+    request.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
+    const webhookIdHeader = headers["webhook-id"] || headers["webhook_id"] || headers["x-webhook-id"];
+
     // track events and based on events store data
     await ctx.runMutation(api.subscriptions.handleWebhookEvent, {
       body,
+      webhookId: webhookIdHeader,
     });
 
     console.log("✅ Webhook processed successfully");
