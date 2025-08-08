@@ -32,12 +32,20 @@ export default defineSchema({
     .index("userId", ["userId"])
     .index("polarId", ["polarId"]),
   webhookEvents: defineTable({
+    id: v.optional(v.string()),
     type: v.string(),
     polarEventId: v.string(),
     createdAt: v.string(),
     modifiedAt: v.string(),
     data: v.any(),
+    processed: v.optional(v.boolean()),
+    created_at: v.optional(v.number()),
+    webhookId: v.optional(v.string()),
+    processingStatus: v.optional(v.string()),
+    processedAt: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
   })
     .index("type", ["type"])
-    .index("polarEventId", ["polarEventId"]),
+    .index("polarEventId", ["polarEventId"])
+    .index("by_webhook_id", ["webhookId"]),
 });

@@ -529,11 +529,7 @@ export const paymentWebhook = httpAction(async (ctx, request) => {
     const body = JSON.parse(rawBody);
     console.log("🎯 Webhook event type:", body.type);
 
-    // Get webhook ID from headers for deduplication
-    const headers: Record<string, string> = {};
-    request.headers.forEach((value, key) => {
-      headers[key] = value;
-    });
+    // Get webhook ID from headers for deduplication (reuse headers already created above)
     const webhookIdHeader = headers["webhook-id"] || headers["webhook_id"] || headers["x-webhook-id"];
 
     // track events and based on events store data
