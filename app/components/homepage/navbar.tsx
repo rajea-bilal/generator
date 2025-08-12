@@ -205,7 +205,6 @@ export const Navbar = ({
                       asChild
                       variant="outline"
                       size="sm"
-                      className={cn(isScrolled && "lg:hidden")}
                     >
                       <Link to="/sign-in" prefetch="viewport">
                         <span>Login</span>
@@ -214,25 +213,9 @@ export const Navbar = ({
                     <Button
                       asChild
                       size="sm"
-                      className={cn(isScrolled && "lg:hidden")}
                     >
                       <Link to="/sign-up" prefetch="viewport">
                         <span>Sign Up</span>
-                      </Link>
-                    </Button>
-                    <Button
-                      asChild
-                      size="sm"
-                      className={cn(isScrolled ? "lg:inline-flex" : "hidden", "min-w-[90px]")}
-                      disabled={isDashboardLoading}
-                      onClick={handleDashboardClick}
-                    >
-                      <Link to={dashboardLink} prefetch="viewport">
-                        {isDashboardLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <span>{dashboardText}</span>
-                        )}
                       </Link>
                     </Button>
                   </>

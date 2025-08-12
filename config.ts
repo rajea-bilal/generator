@@ -96,7 +96,7 @@ const getEnvVar = (key: string): string | undefined => {
 
 export const config: AppConfig = {
   features: {
-    auth: false,        // Enable/disable Clerk authentication
+    auth: true,        // Enable/disable Clerk authentication
     payments: false,    // Enable/disable Polar.sh payments
     convex: false,      // Enable/disable Convex backend
     email: false,      // Enable/disable Resend email
@@ -104,7 +104,7 @@ export const config: AppConfig = {
   },
   services: {
     clerk: {
-      enabled: false,
+      enabled: true,
       publishableKey: getEnvVar('VITE_CLERK_PUBLISHABLE_KEY'),
       secretKey: getEnvVar('CLERK_SECRET_KEY'),
     },
@@ -145,7 +145,7 @@ export const config: AppConfig = {
     showPricing: false,    // Show pricing page and components
     showDashboard: true,  // Show dashboard routes
     showChat: true,       // Show AI chat functionality
-    showAuth: false,       // Show sign-in/sign-up routes
+    showAuth: true,       // Show sign-in/sign-up routes
   },
 };
 
