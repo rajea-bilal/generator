@@ -104,7 +104,7 @@ export const config: AppConfig = {
   },
   services: {
     clerk: {
-      enabled: true,
+      enabled: false,
       publishableKey: getEnvVar('VITE_CLERK_PUBLISHABLE_KEY'),
       secretKey: getEnvVar('CLERK_SECRET_KEY'),
     },
