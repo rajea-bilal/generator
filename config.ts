@@ -96,7 +96,7 @@ const getEnvVar = (key: string): string | undefined => {
 
 export const config: AppConfig = {
   features: {
-    auth: true,        // Enable/disable Clerk authentication
+    auth: false,        // Enable/disable Clerk authentication
     payments: false,    // Enable/disable Polar.sh payments
     convex: false,      // Enable/disable Convex backend
     email: false,      // Enable/disable Resend email
@@ -145,7 +145,7 @@ export const config: AppConfig = {
     showPricing: false,    // Show pricing page and components
     showDashboard: true,  // Show dashboard routes
     showChat: true,       // Show AI chat functionality
-    showAuth: true,       // Show sign-in/sign-up routes
+    showAuth: false,       // Show sign-in/sign-up routes
   },
 };
 
