@@ -96,7 +96,7 @@ export default function IntegrationsSection({
 
                 <Button variant="outline" size="sm" asChild>
                   <Link
-                    to="https://codeandcreed.tech/accelerator"
+                    to="https://www.codeandcreed.tech/"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
