@@ -34,7 +34,7 @@ export default function IntegrationsSection({
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </div>
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Exclusive to Code&Creed Accelerator Members
+              Powering Code&Creed Startups
             </span>
           </Link>
         </div>
