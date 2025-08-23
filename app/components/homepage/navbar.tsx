@@ -1,6 +1,6 @@
 "use client";
 import { UserButton } from "@clerk/react-router";
-import { Github, Menu, X, Loader2 } from "lucide-react";
+import { Menu, X, Loader2, Lock } from "lucide-react";
 import React, { useCallback, useState } from "react";
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
@@ -172,14 +172,10 @@ export const Navbar = ({
                 </ul>
               </div>
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                <Link
-                  to="https://github.com/ObaidUr-Rahmaan/kaizen"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center"
-                >
-                  <Github className="w-5 h-5" />
-                </Link>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Lock className="w-4 h-4" />
+                  <span className="hidden sm:inline">Private Repo</span>
+                </div>
                 {authEnabled && loaderData?.isSignedIn ? (
                   <div className="flex items-center gap-3">
                     <Button 
