@@ -34,7 +34,7 @@ export default function IntegrationsSection({
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </div>
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Powering Code&Creed Startups
+              Exclusive to Code&Creed Accelerator Members
             </span>
           </Link>
         </div>
@@ -80,27 +80,27 @@ export default function IntegrationsSection({
                 Kaizen
               </h2>
               <p className="text-muted-foreground text-3xl">
-                Modern React Router v7 Boilerplate. Designed for speed <em>and</em> correctness.
+                Private React Router v7 Boilerplate. Available exclusively for Accelerator members.
               </p>
 
               <div className="flex gap-2 justify-center sm:justify-start">
-                <Button variant="outline" size="sm" asChild>
-                  <Link
-                    to="https://github.com/ObaidUr-Rahmaan/kaizen"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    ⭐️ Star on GitHub
-                  </Link>
-                </Button>
-
                 <Button variant="outline" size="sm" asChild>
                   <Link
                     to="https://blueprint.codeandcreed.tech/building-with-kaizen/kaizen"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Go to Docs
+                    📚 Member Documentation
+                  </Link>
+                </Button>
+
+                <Button variant="outline" size="sm" asChild>
+                  <Link
+                    to="https://codeandcreed.tech/accelerator"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    🚀 Join Accelerator
                   </Link>
                 </Button>
               </div>
