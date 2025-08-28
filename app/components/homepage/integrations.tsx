@@ -100,7 +100,7 @@ export default function IntegrationsSection({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    🚀 Join Accelerator
+                    🚀 Join Accelerator to get access
                   </Link>
                 </Button>
               </div>
