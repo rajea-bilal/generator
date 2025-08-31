@@ -72,7 +72,7 @@ const createCheckout = async ({
 export const getAvailablePlansQuery = query({
   handler: async (ctx) => {
     const polar = new Polar({
-      server: "sandbox",
+      server: (process.env.POLAR_SERVER as "sandbox" | "production") || "sandbox",
       accessToken: process.env.POLAR_ACCESS_TOKEN,
     });
 
@@ -105,7 +105,7 @@ export const getAvailablePlansQuery = query({
 export const getAvailablePlans = action({
   handler: async (ctx) => {
     const polar = new Polar({
-      server: "sandbox",
+      server: (process.env.POLAR_SERVER as "sandbox" | "production") || "sandbox",
       accessToken: process.env.POLAR_ACCESS_TOKEN,
     });
 
@@ -570,7 +570,7 @@ export const paymentWebhook = httpAction(async (ctx, request) => {
 export const createCustomerPortalUrl = action({
   handler: async (ctx, args: { customerId: string }) => {
     const polar = new Polar({
-      server: "sandbox",
+      server: (process.env.POLAR_SERVER as "sandbox" | "production") || "sandbox",
       accessToken: process.env.POLAR_ACCESS_TOKEN,
     });
 
