@@ -91,15 +91,12 @@ export const Navbar = ({
 
   // Simple computations don't need useMemo
   const authEnabled = isFeatureEnabled('auth') && config.ui.showAuth;
-  const paymentsEnabled = isFeatureEnabled('payments') && config.ui.showPricing;
   
-  const dashboardLink = !authEnabled 
-    ? "/dashboard" 
-    : !loaderData?.isSignedIn 
-    ? "/sign-up" 
-      : loaderData.hasActiveSubscription || !paymentsEnabled 
-        ? "/dashboard" 
-        : "/pricing";
+  const dashboardLink = !authEnabled
+    ? "/dashboard"
+    : !loaderData?.isSignedIn
+      ? "/sign-up"
+      : "/dashboard";
 
   const dashboardText = "Dashboard";
 

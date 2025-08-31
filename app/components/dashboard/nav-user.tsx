@@ -9,7 +9,7 @@ import {
   IconLogout,
   IconUserCircle,
 } from "@tabler/icons-react";
-import { SettingsIcon } from "lucide-react";
+import { Loader2, SettingsIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   DropdownMenu,
@@ -27,6 +27,9 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar";
 import { useClerk } from "@clerk/react-router";
+import { Button } from "~/components/ui/button";
+import { useNavigate } from "react-router";
+import { useState } from "react";
 
 export function NavUser({ user }: any) {
   const { isMobile } = useSidebar();
@@ -37,8 +40,10 @@ export function NavUser({ user }: any) {
     (user?.lastName?.charAt(0) || "").toUpperCase();
   const userProfile = user.imageUrl;
   const { signOut } = useClerk();
+  const navigate = useNavigate();
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
-  const showPlanPill = isFeatureEnabled("payments") && isFeatureEnabled("convex");
+  const showBillingUi = isFeatureEnabled("payments") && isFeatureEnabled("convex");
 
   function PlanPill() {
     const subscription = useQuery(api.subscriptions.fetchUserSubscription);
@@ -60,10 +65,40 @@ export function NavUser({ user }: any) {
     );
   }
 
+  function UpgradeButton() {
+    const subscription = useQuery(api.subscriptions.fetchUserSubscription);
+    const hasActive = subscription?.status === "active";
+    if (hasActive) return null;
+
+    return (
+      <div className="mb-2">
+        <Button
+          size="sm"
+          className="w-full"
+          disabled={isUpgrading}
+          onClick={() => {
+            setIsUpgrading(true);
+            navigate("/pricing");
+          }}
+        >
+          {isUpgrading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Redirecting...
+            </>
+          ) : (
+            "Upgrade Plan"
+          )}
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        {showPlanPill && <PlanPill />}
+        {showBillingUi && <UpgradeButton />}
+        {showBillingUi && <PlanPill />}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
