@@ -1,3 +1,8 @@
+"use client";
+import { useQuery } from "convex/react";
+import { Badge } from "~/components/ui/badge";
+import { api } from "../../../convex/_generated/api";
+import { isFeatureEnabled } from "../../../config";
 import { SignOutButton } from "@clerk/react-router";
 import {
   IconDotsVertical,
@@ -33,9 +38,32 @@ export function NavUser({ user }: any) {
   const userProfile = user.imageUrl;
   const { signOut } = useClerk();
 
+  const showPlanPill = isFeatureEnabled("payments") && isFeatureEnabled("convex");
+
+  function PlanPill() {
+    const subscription = useQuery(api.subscriptions.fetchUserSubscription);
+    const hasActive = subscription?.status === "active";
+    if (!hasActive) return null;
+
+    const interval = (subscription?.interval || "").replace("_", " ");
+    const intervalShort = interval === "month" ? "mo" : interval === "year" ? "yr" : interval;
+    const currency = subscription?.currency?.toUpperCase();
+    const symbol = currency === "USD" ? "$" : "";
+    const amount = typeof subscription?.amount === "number" ? (subscription.amount / 100).toFixed(0) : undefined;
+    const label = amount ? `${symbol}${amount}${intervalShort ? "/" + intervalShort : ""}` : "Active";
+    return (
+      <div className="mb-2">
+        <Badge variant="outline" className="rounded-full px-2 py-0.5 text-xs">
+          {label}
+        </Badge>
+      </div>
+    );
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
+        {showPlanPill && <PlanPill />}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton

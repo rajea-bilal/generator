@@ -35,20 +35,7 @@ export async function loader(args: Route.LoaderArgs) {
     }).users.getUser(userId);
   }
 
-  // 2. Subscription check
-  if (paymentsEnabled && convexEnabled && userId) {
-    const { fetchQuery } = await import("convex/nextjs");
-    const { api } = await import("../../../convex/_generated/api");
-
-    const subscriptionStatus = await fetchQuery(
-      api.subscriptions.checkUserSubscriptionStatusByClerkId,
-      { clerkUserId: userId }
-    );
-
-    if (!subscriptionStatus?.hasActiveSubscription) {
-      throw redirect("/subscription-required");
-    }
-  }
+  // 2. Subscription check removed: dashboard is accessible regardless of subscription status
 
   return { user, authEnabled, paymentsEnabled };
 }
