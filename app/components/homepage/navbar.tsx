@@ -168,7 +168,7 @@ export const Navbar = ({
                   ))}
                 </ul>
               </div>
-              <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+              <div className="flex w-full flex-col items-center space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Lock className="w-4 h-4" />
                   <span className="hidden sm:inline">Private Repo</span>
