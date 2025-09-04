@@ -12,7 +12,7 @@ icon: 'K'
   **DO NOT upgrade any dependencies in your package.json** for the core stack dependencies (Clerk, Convex, Polar.sh, etc.), unless you have a specific reason to and are following the official migration guides from each service. Upgrading packages without proper migration can break your authentication, database connections, and other critical functionality. The current versions in the boilerplate are tested and stable together.
 </Warning>
 
-Repo: https://github.com/ObaidUr-Rahmaan/kaizen
+Repo: https://github.com/code-and-creed/kaizen
 
 ## Pre-requisites
 
@@ -111,7 +111,7 @@ These 3rd party services abstract away significant infrastructure work in key ar
 
     2. Clone the Kaizen repository and set up your project:
        ```bash
-       git clone https://github.com/ObaidUr-Rahmaan/kaizen.git your-project-name
+       git clone https://github.com/code-and-creed/kaizen.git your-project-name
        cd your-project-name
        rm -rf .git
        git init
@@ -213,13 +213,13 @@ These 3rd party services abstract away significant infrastructure work in key ar
        - Add: `VITE_CLERK_FRONTEND_API_URL` with the Issuer URL from step 4
        - This enables Convex to verify Clerk JWT tokens
 
-    6. Optional: You can add this for external tools; the app uses `VITE_CONVEX_URL`:
+    6. Also add this env var to your `.env.local` file:
        ```env
        NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
        ```
 
     <Note>
-      It's the same as your `VITE_CONVEX_URL` and not required by this app.
+      It's the same as your `VITE_CONVEX_URL`
     </Note>
 
     7. Shutdown and Restart your development server. Authentication should now be working.
@@ -324,7 +324,7 @@ These 3rd party services abstract away significant infrastructure work in key ar
     
     i) Create the same products (if applicable) in your production polar.sh dashboard
     ii) Create/Copy all the same variables you did when developing locally (POLAR_ACCESS_TOKEN, POLAR_ORGANIZATION_ID, POLAR_WEBHOOK_SECRET)
-    iii) Set `POLAR_SERVER=production` in your Convex Environment Variables
+    iii) Set POLAR_SERVER to `production` in your production environment variables
 
     <Note>
       For POLAR_WEBHOOK_SECRET, use https://your-prod-name.convex.site/payments/webhook`
@@ -456,17 +456,31 @@ These 3rd party services abstract away significant infrastructure work in key ar
     <Warning>
       **Important: When returning to work on your project**
       
+      Start these in three separate terminals:
+      - Terminal 1:
+        ```bash
+        npm run dev
+        ```
+      - Terminal 2:
+        ```bash
+        npx convex dev
+        ```
+      - Terminal 3 (only when testing webhooks like payments):
+        ```bash
+        ngrok http 5173  # or your Vite dev port
+        ```
+      
       Each time you restart ngrok, it generates a new URL. You must:
       1. Update the `FRONTEND_URL` in your `.env.local` file with the new ngrok URL
-      2. Update your convex environment variable `FRONTEND_URL` with the new ngrok URL
-      3. Update `vite.config.ts` with the new ngrok URL
-      4. Restart both your convex dev server and your app dev server after those changes
+      2. Update your Convex environment variable `FRONTEND_URL` with the new ngrok URL
+      3. Update `vite.config.ts` → `server.allowedHosts` with the new ngrok host (same as initial setup)
+      4. Restart both your Convex dev server and your app dev server after those changes
       
       Failing to update these will cause webhooks to fail silently!
     </Warning>
 
     <Note>
-      Remember to always use the ngrok URL when testing locally for webhook functionality, but you can use `localhost:5173` for general development.
+      ngrok is only required when testing webhooks (e.g., payments, emails). After completing a local subscription test, you can switch your browser back to `http://localhost:5173` immediately; no server restarts are needed. Keep ngrok running only when you need to receive webhooks.
     </Note>
   </Step>
 
