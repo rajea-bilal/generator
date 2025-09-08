@@ -21,6 +21,12 @@ const routes: RouteConfig = [
   route("pricing", "routes/pricing.tsx"),
   route("success", "routes/success.tsx"),
   
+  // Brand Kit Generator
+  route("brand-kit", "routes/brand-kit.tsx"),
+  
+  // API Routes
+  route("api/export", "routes/api+/export.ts"),
+  
   // Dashboard routes (always included)
   layout("routes/dashboard/layout.tsx", [
     route("dashboard", "routes/dashboard/index.tsx"),

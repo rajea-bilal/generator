@@ -4,7 +4,7 @@ import { httpAction } from "./_generated/server";
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
 
-import { resend } from "./sendEmails";
+// import { resend } from "./sendEmails"; // Commented out until Resend component is set up
 
 export const chat = httpAction(async (ctx, req) => {
   // Extract the `messages` from the body of the request
@@ -100,13 +100,14 @@ http.route({
   handler: paymentWebhook,
 });
 
-http.route({
-  path: "/resend-webhook",
-  method: "POST",
-  handler: httpAction(async (ctx, req) => {
-    return await resend.handleResendEventWebhook(ctx, req);
-  }),
-});
+// TODO: Re-enable once Resend component is properly configured
+// http.route({
+//   path: "/resend-webhook",
+//   method: "POST",
+//   handler: httpAction(async (ctx, req) => {
+//     return await resend.handleResendEventWebhook(ctx, req);
+//   }),
+// });
 
 // Log that routes are configured
 console.log("HTTP routes configured");

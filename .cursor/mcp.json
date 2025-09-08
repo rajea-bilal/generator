@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "browsermcp": {
+     "command": "/Users/RajeaBilal/.nvm/versions/node/v20.19.2/bin/node",
+      "args": [
+         "/Users/RajeaBilal/.nvm/versions/node/v20.19.2/lib/node_modules/npm/bin/npx-cli.js",
+        "@browsermcp/mcp@latest", 
+        "--yes"
+      ]
+    }
+  }
+}

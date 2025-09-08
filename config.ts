@@ -80,6 +80,10 @@ export interface AppConfig {
 // ========================
 // Access env vars safely in both Node (process.env) and browser (import.meta.env)
 const getEnvVar = (key: string): string | undefined => {
+  // Prefer Vite env on the client to avoid referencing `process` during hydration
+  if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env[key] !== undefined) {
+    return (import.meta as any).env[key] as string;
+  }
   if (typeof process !== 'undefined' && process.env && process.env[key] !== undefined) {
     return process.env[key] as string;
   }
@@ -94,58 +98,37 @@ const getEnvVar = (key: string): string | undefined => {
 // ========================
 // Edit these values to enable/disable features:
 
-export const config: AppConfig = {
+export const config: AppConfig =  {
   features: {
-    auth: false,        // Enable/disable Clerk authentication
-    payments: false,    // Enable/disable Polar.sh payments
-    convex: false,      // Enable/disable Convex backend
-    email: false,      // Enable/disable Resend email
-    monitoring: false,  // Enable/disable error reporting and monitoring
+    auth: false,  // Disable auth temporarily to test brand-kit
+    payments: false,
+    convex: true,
+    email: false,
+    monitoring: false,
   },
   services: {
     clerk: {
-      enabled: false,
+      enabled: true,
       publishableKey: getEnvVar('VITE_CLERK_PUBLISHABLE_KEY'),
       secretKey: getEnvVar('CLERK_SECRET_KEY'),
     },
-    polar: {
-      enabled: false,
-      accessToken: getEnvVar('POLAR_ACCESS_TOKEN'),
-      organizationId: getEnvVar('POLAR_ORGANIZATION_ID'),
-      webhookSecret: getEnvVar('POLAR_WEBHOOK_SECRET'),
-    },
+    polar: { enabled: false },
     convex: {
-      enabled: false,
+      enabled: true,
       deployment: getEnvVar('CONVEX_DEPLOYMENT'),
       url: getEnvVar('VITE_CONVEX_URL'),
     },
-    resend: {
-      enabled: false,
-      apiKey: getEnvVar('RESEND_API_KEY'),
-      webhookSecret: getEnvVar('RESEND_WEBHOOK_SECRET'),
-    },
+    resend: { enabled: false },
     openai: {
-      enabled: false,
+      enabled: true,
       apiKey: getEnvVar('OPENAI_API_KEY'),
-    },
-    sentry: {
-      enabled: false,
-      dsn: getEnvVar('VITE_SENTRY_DSN') || getEnvVar('SENTRY_DSN'),
-      tracesSampleRate: 0.2,
-      environment: getEnvVar('SENTRY_ENVIRONMENT'),
-    },
-    openstatus: {
-      enabled: false,
-      apiKey: getEnvVar('OPENSTATUS_API_KEY'),
-      projectId: getEnvVar('OPENSTATUS_PROJECT_ID'),
-      webhookUrl: getEnvVar('OPENSTATUS_WEBHOOK_URL'),
     },
   },
   ui: {
-    showPricing: false,    // Show pricing page and components
-    showDashboard: true,  // Show dashboard routes
-    showChat: true,       // Show AI chat functionality
-    showAuth: false,       // Show sign-in/sign-up routes
+    showPricing: false,
+    showDashboard: true,
+    showChat: true,
+    showAuth: true,
   },
 };
 
