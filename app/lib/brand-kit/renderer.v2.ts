@@ -29,7 +29,10 @@ function renderIconOrShape(spec: BrandSpecV2, size: number): string {
   const padding = spec.params.padding;
 
   let inner = '';
-  if (spec.iconId.startsWith('shape:')) {
+  if (!spec.iconId) {
+    // No icon selected: render nothing for the icon; background still renders
+    inner = '';
+  } else if (spec.iconId.startsWith('shape:')) {
     const kind = spec.iconId.split(':')[1];
     if (kind === 'rounded-square') {
       inner = shapeRoundedSquare({ size: size - padding * 2, color, cornerRadius: spec.params.cornerRadius, stroke });
@@ -65,10 +68,12 @@ function renderIconOrShape(spec: BrandSpecV2, size: number): string {
         // Render as outline: no fills, use stroke color, and keep stroke width constant when scaling
         inner = `<g transform="scale(${factor}) translate(${translate}, ${translate})" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke">${rawInner}</g>`;
       } else {
-        inner = shapeRoundedSquare({ size: size - padding * 2, color, cornerRadius: spec.params.cornerRadius, stroke });
+        // Unknown icon definition: render nothing rather than forcing a shape
+        inner = '';
       }
     } else {
-      inner = shapeRoundedSquare({ size: size - padding * 2, color, cornerRadius: spec.params.cornerRadius, stroke });
+      // Unknown icon id: render nothing
+      inner = '';
     }
   }
 
@@ -95,6 +100,18 @@ export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
   // For left-lockup we render the mark at a larger explicit size to create a bold look without clipping
   const markSize = Math.round(size * 1.18);
   const fontSize = Math.round(markSize / 3.0); // larger text size
+
+  // If there is no icon selected, center the text within a nicely padded canvas
+  if (!spec.iconId) {
+    const horizontalPadding = 64;
+    const verticalPadding = 48;
+    const textWidth = estimateTextWidthPx(text, fontSize);
+    const width = textWidth + horizontalPadding * 2;
+    const height = fontSize + verticalPadding * 2;
+    const bgRect = `<rect width="${width}" height="${height}" fill="${spec.background.type === 'solid' ? spec.background.color : spec.colors.background}" />`;
+    const textBlock = `<text x="${width / 2}" y="${height / 2}" font-family="${font}" font-size="${fontSize}" font-weight="600" fill="${spec.colors.text}" dominant-baseline="middle" text-anchor="middle">${text}</text>`;
+    return `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${bgRect}${textBlock}</svg>`;
+  }
 
   if (spec.template === 'mark-only') {
     return renderMarkV2(spec, size);

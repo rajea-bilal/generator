@@ -13,7 +13,7 @@ export type BrandSpecV2 = {
   name: string;
   initial: string;
   template: TemplateV2;
-  iconId: string; // e.g. "shape:rounded-square" or "lucide:sparkles"
+  iconId: string; // e.g. "shape:rounded-square" or "lucide:sparkles"; may be empty for no icon
   colors: {
     primary: string;
     background: string;
@@ -22,7 +22,10 @@ export type BrandSpecV2 = {
   background: BackgroundSpec;
   font: "Inter" | "Sora" | "Manrope" | "Outfit";
   params: {
-    scale: number;       // 0.5–1.5
+    scale: number;       // 0.5–1.5 (legacy, not used)
+    iconScale: number;   // 0.6–1.6 multiplier for icon size in lockups
+    textScale: number;   // 0.6–1.6 multiplier for wordmark font size
+    letterSpacing: number; // -2–6 px letter-spacing for wordmark
     rotate: number;      // -45–45 (deg)
     stroke: number;      // 0–8 (px)
     cornerRadius: number;// 0–64 (px) for shapes
@@ -39,7 +42,7 @@ export const defaultSpecV2: BrandSpecV2 = {
   name: "",
   initial: "",
   template: "left-lockup",
-  iconId: "shape:rounded-square",
+  iconId: "",
   colors: {
     primary: "#FFF7ED", // Tailwind orange-50
     background: "#000000",
@@ -49,6 +52,9 @@ export const defaultSpecV2: BrandSpecV2 = {
   font: "Inter",
   params: {
     scale: 0.8,
+    iconScale: 1.0,
+    textScale: 1.0,
+    letterSpacing: 0,
     rotate: 0,
     stroke: 0,
     cornerRadius: 16,

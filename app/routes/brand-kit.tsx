@@ -5,28 +5,29 @@
  * Features two-panel layout: form inputs on left, live SVG previews on right.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { getInitialFromName } from '~/lib/brand-kit';
-import { defaultSpecV2, renderSvgsV2, renderFormatsV2, type BrandSpecV2 } from '~/lib/brand-kit';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { getInitialFromName } from '../lib/brand-kit';
+import { defaultSpecV2, renderSvgsV2, renderFormatsV2, renderMarkV2, renderLockupV2, type BrandSpecV2 } from '../lib/brand-kit';
+import { AppIconMockup } from "../components/mockups/app-icon";
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
-import { Slider } from '~/components/ui/slider';
+import { Slider } from '../components/ui/slider';
 import { Card, CardContent } from '~/components/ui/card';
 import { Separator } from '~/components/ui/separator';
-import { Download, PaintbrushVerticalIcon, Type, Settings, LoaderPinwheel, AudioWaveformIcon } from 'lucide-react';
-import { IconPicker } from '~/components/brand/icon-picker';
+import { Download, PaintbrushVerticalIcon, Type, Settings, LoaderPinwheel, AudioWaveformIcon, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { IconPicker } from '../components/brand/icon-picker';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '~/components/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '../components/ui/form';
 
 // Debug helper
 const dbg = (...args: any[]) => console.debug('[BrandKit]', ...args);
 const BrandSchema = z.object({
   name: z.string().min(1, 'Brand name is required').max(40),
-  initial: z.string().min(1, 'Initial is required').max(2),
   font: z.enum(['Inter', 'Sora', 'Manrope', 'Outfit']),
   template: z.enum(['mark-only', 'left-lockup', 'stacked', 'badge']), 
   iconId: z.string(),
@@ -47,15 +48,43 @@ export function meta() {
 }
 
 export default function BrandKitGenerator() {
+  const advancedRef = useRef<HTMLDivElement>(null!);
   const [spec, setSpec] = useState<BrandSpecV2>(defaultSpecV2);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [view, setView] = useState<"hero" | "header" | "app" | "card" | "social">("hero");
+  
+  // Hydrate defaults from query string (Fast Start wizard)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const next = { ...defaultSpecV2 };
+      const name = params.get('name') || '';
+      const template = params.get('template') as BrandSpecV2['template'] | null;
+      const font = params.get('font') as BrandSpecV2['font'] | null;
+      const iconId = params.get('iconId');
+      const primary = params.get('primary');
+      const text = params.get('text');
+
+      if (name) next.name = name;
+      if (name) next.initial = getInitialFromName(name);
+      if (template) next.template = template;
+      if (font) next.font = font;
+      if (iconId) next.iconId = iconId;
+      if (primary) next.colors.primary = primary;
+      if (text) next.colors.text = text;
+
+      // Only update if at least one param provided
+      if (name || template || font || iconId || primary || text) {
+        setSpec(next);
+      }
+    } catch {}
+  }, []);
   
   const form = useForm<z.infer<typeof BrandSchema>>({
     resolver: zodResolver(BrandSchema),
     defaultValues: {
       name: spec.name,
-      initial: spec.initial,
       font: spec.font,
       template: spec.template,
       iconId: spec.iconId,
@@ -70,7 +99,8 @@ export default function BrandKitGenerator() {
       setSpec((prev) => ({
         ...prev,
         name: values.name ?? prev.name,
-        initial: values.initial ?? prev.initial,
+        // Derive initial from brand name (first character or sensible default)
+        initial: getInitialFromName(values.name ?? prev.name),
         font: (values.font as BrandSpecV2['font']) ?? prev.font,
         template: (values.template as BrandSpecV2['template']) ?? prev.template,
         iconId: values.iconId ?? prev.iconId,
@@ -183,35 +213,21 @@ export default function BrandKitGenerator() {
                 
                 {/* Brand Details */}
                 <Form {...form}>
-                  <form className="space-y-4" onSubmit={form.handleSubmit(() => {})}>
+                  <form className="space-y-10" onSubmit={form.handleSubmit(() => {})}>
                   <div className="flex items-center gap-2 mb-10">
                     <AudioWaveformIcon className="w-6 h-6 text-zinc-700" />
                     <h3 className="text-xl font-semibold text-zinc-700">Brand Details</h3>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-10">
                     <FormField
                       control={form.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xl text-zinc-700">Brand Name</FormLabel>
+                          <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Brand Name</FormLabel>
                           <FormControl>
-                            <Input className="h-14 text-lg placeholder:text-lg placeholder:text-zinc-300" placeholder="Enter brand name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="initial"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xl text-zinc-700">Initial</FormLabel>
-                          <FormControl>
-                            <Input className="h-14 text-lg placeholder:text-lg placeholder:text-zinc-300" maxLength={2} placeholder="B" {...field} />
+                            <Input className="h-12 text-lg placeholder:text-lg placeholder:text-zinc-300" placeholder="Enter brand name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -222,16 +238,24 @@ export default function BrandKitGenerator() {
                   <div>
                     <FormField control={form.control} name="font" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xl text-zinc-700">Font</FormLabel>
-                        <Select defaultValue={field.value} onValueChange={(v) => field.onChange(v)}>
-                      <SelectTrigger className="h-12 text-lg min-w-[260px]"><SelectValue placeholder="Select font..." /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Inter">Inter</SelectItem>
-                        <SelectItem value="Sora">Sora</SelectItem>
-                        <SelectItem value="Manrope">Manrope</SelectItem>
-                        <SelectItem value="Outfit">Outfit</SelectItem>
-                      </SelectContent>
-                        </Select>
+                        <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Font</FormLabel>
+                        <FormControl>
+                          <div className="flex flex-wrap gap-2">
+                            {(["Inter", "Sora", "Manrope", "Outfit"] as const).map((f) => {
+                              const selected = field.value === f;
+                              return (
+                                <button
+                                  type="button"
+                                  key={f}
+                                  onClick={() => field.onChange(f)}
+                                  className={`rounded-full px-4 py-2 uppercase tracking-[0.2em] text-xs font-semibold border transition-colors outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 ${selected ? "bg-black text-white border-transparent" : "bg-card text-foreground border-neutral-300 hover:bg-neutral-100"}`}
+                                >
+                                  {f}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -239,74 +263,66 @@ export default function BrandKitGenerator() {
                   </form>
                 </Form>
                 
-                <Separator />
-                
-                {/* Style & Color */}
-                <div className="space-y-14">
-                  <div className="flex items-center gap-2 mb-10">
-                    <PaintbrushVerticalIcon className="w-6 h-6 text-zinc-700" />
-                    <h3 className="text-xl font-semibold text-zinc-700">Style & Color</h3>
+                {/* Style & Color – Conditional icon controls: show "Add icon" when none; expose modify/remove under Advanced */}
+                <div className="space-y-10">
+                  <div>
+                    <FormField control={form.control} name="template" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Style</FormLabel>
+                        <FormControl>
+                          <div className="flex flex-wrap gap-2">
+                            {(["mark-only", "left-lockup", "stacked", "badge"] as const).map((t) => {
+                              const selected = field.value === t;
+                              const label = t === "mark-only" ? "Mark only" : t === "left-lockup" ? "Left lockup" : t.charAt(0).toUpperCase() + t.slice(1);
+                              return (
+                                <button
+                                  type="button"
+                                  key={t}
+                                  onClick={() => field.onChange(t)}
+                                  className={`rounded-full px-4 py-2 text-sm font-medium border transition-colors outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 ${selected ? "bg-black text-white border-transparent" : "bg-card text-foreground border-neutral-300 hover:bg-neutral-100"}`}
+                                >
+                                  {label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                   </div>
-                  
-                  <div className="grid grid-cols-2  ">
+                  {!spec.iconId && (
                     <div>
-                      <FormField control={form.control} name="template" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xl text-zinc-700">Style</FormLabel>
-                          <Select defaultValue={field.value} onValueChange={(v) => field.onChange(v)}>
-                        <SelectTrigger className="h-12 text-lg min-w-[260px]"><SelectValue placeholder="Layout template" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="mark-only">Mark only</SelectItem>
-                          <SelectItem value="left-lockup">Left lockup</SelectItem>
-                          <SelectItem value="stacked">Stacked</SelectItem>
-                          <SelectItem value="badge">Badge</SelectItem>
-                        </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                    <div className="">
-                      <FormLabel className="text-xl text-zinc-700">Icon</FormLabel>
+                      <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Icon</FormLabel>
                       <div className="flex items-center gap-2">
                         <IconPicker value={spec.iconId} onChange={(id) => form.setValue('iconId', id)} />
-                        <Select defaultValue={spec.iconId.startsWith('shape:') ? spec.iconId : 'shape:rounded-square'} onValueChange={(v) => form.setValue('iconId', v)}>
-                          <SelectTrigger className="h-12 text-lg min-w-[260px]"><SelectValue placeholder="Pick shape" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="shape:rounded-square">Rounded Square</SelectItem>
-                            <SelectItem value="shape:circle">Circle</SelectItem>
-                            <SelectItem value="shape:capsule">Capsule</SelectItem>
-                          </SelectContent>
-                        </Select>
                       </div>
+                    </div>
+                  )}
+                  <div>
+                    <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Icon Color</FormLabel>
+                    <div className="mt-2">
+                      <FormField control={form.control} name="colors.primary" render={({ field }) => (
+                        <ColorSwatchRow
+                          value={field.value}
+                          onChange={(v) => field.onChange(v)}
+                          presets={["#F97316", "#EF4444", "#06B6D4", "#10B981", "#8B5CF6", "#FFF7ED"]}
+                        />
+                      )} />
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-10">
-                    <div>
-                      <FormLabel className="text-xl text-zinc-700">Icon Color</FormLabel>
-                      <div className="flex gap-3 mt-4">
-                        <FormField control={form.control} name="colors.primary" render={({ field }) => (
-                          <>
-                            <Input type="color" className="w-16 h-12 cursor-pointer" value={field.value} onChange={field.onChange} />
-                            <Input className="flex-1 cursor-pointer h-12 text-lg placeholder:text-lg placeholder:text-zinc-300" value={field.value} onChange={field.onChange} placeholder="#FFF7ED" />
-                          </>
-                        )} />
-                      </div>
-                    </div>
-                    <div>
-                      <FormLabel className="text-xl text-zinc-700">Text Color</FormLabel>
-                      <div className="flex gap-3 mt-4">
-                        <FormField control={form.control} name="colors.text" render={({ field }) => (
-                          <>
-                            <Input type="color" className="w-16 h-12 cursor-pointer" value={field.value} onChange={field.onChange} />
-                            <Input className="flex-1 cursor-pointer h-12 text-lg placeholder:text-lg placeholder:text-zinc-300" value={field.value} onChange={field.onChange} placeholder="#FFF7ED" />
-                          </>
-                        )} />
-                      </div>
+                  <div>
+                    <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Text Color</FormLabel>
+                    <div className="mt-2">
+                      <FormField control={form.control} name="colors.text" render={({ field }) => (
+                        <ColorSwatchRow
+                          value={field.value}
+                          onChange={(v) => field.onChange(v)}
+                          presets={["#0B0B0F", "#111827", "#FFFFFF", "#E5E7EB", "#9CA3AF", "#FFF7ED"]}
+                        />
+                      )} />
                     </div>
                   </div>
-                  
                   {/* Theme controls removed */}
                 </div>
                 
@@ -315,39 +331,93 @@ export default function BrandKitGenerator() {
                 {/* Advanced Parameters */}
                 <div className="space-y-4">
                   <Button
-                    variant="ghost"
-                    onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="w-full justify-between"
+                    onClick={() => {
+                      const next = !showAdvanced;
+                      setShowAdvanced(next);
+                      // Smoothly scroll into view slightly after expansion begins to avoid jolt
+                      if (next) {
+                        window.setTimeout(() => {
+                          advancedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 150);
+                      }
+                    }}
+                    className="w-full justify-between rounded-lg bg-black text-white hover:bg-black/90 h-14 px-8 outline-none ring-0 ring-offset-0 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 uppercase tracking-[0.2em] text-xs font-semibold"
                   >
-                    <div className="flex items-center gap-2">
-                      <Settings className="w-4 h-4" />
-                      <span>Advanced Parameters</span>
-                    </div>
-                    <span>{showAdvanced ? '−' : '+'}</span>
+                    <span className="uppercase tracking-[0.2em] text-xs font-semibold">{showAdvanced ? 'Hide Advanced' : 'Advanced Parameters'}</span>
+                    <ArrowRight className={`w-5 h-5 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} />
                   </Button>
                   
-                  {showAdvanced && (
-                    <div className="space-y-4 pt-2">
-                      {/* Scale locked by renderer */}
-                      <div>
-                        <Label>Rotate ({spec.params.rotate}°)</Label>
-                        <Slider value={[spec.params.rotate]} onValueChange={([v]) => updateParams({ rotate: v })} min={-45} max={45} step={1} className="mt-2" />
+                  <AnimatePresence initial={false}>
+                  {showAdvanced ? (
+                    <SmoothAdvanced innerRef={advancedRef}>
+                      <div className="space-y-8 pt-4">
+                      {spec.iconId && (
+                        <div className="space-y-4">
+                          <Label className="uppercase tracking-[0.2em] text-xs font-semibold mb-3">Icon</Label>
+                          <div className="flex items-center gap-3">
+                            <IconPicker value={spec.iconId} onChange={(id) => form.setValue('iconId', id)} />
+                            <Button type="button" variant="secondary" onClick={() => form.setValue('iconId', '')}>Remove</Button>
+                          </div>
+                        </div>
+                      )}
+                      {/* Rotate */}
+                      <div className="space-y-4">
+                        <Label className="uppercase tracking-[0.2em] text-xs font-semibold mb-3">Rotate</Label>
+                        <Slider
+                          value={[spec.params.rotate]}
+                          onValueChange={([v]) => updateParams({ rotate: v })}
+                          min={-45}
+                          max={45}
+                          step={1}
+                          trackClassName="bg-neutral-200"
+                          rangeClassName="bg-neutral-900"
+                          thumbClassName="h-6 w-6 border-neutral-900"
+                        />
                       </div>
-                      <div>
-                        <Label>Stroke ({spec.params.stroke}px)</Label>
-                        <Slider value={[spec.params.stroke]} onValueChange={([v]) => updateParams({ stroke: v })} min={0} max={8} step={1} className="mt-2" />
+                      <div className="space-y-4">
+                        <Label className="uppercase tracking-[0.2em] text-xs font-semibold mb-3">Stroke</Label>
+                        <Slider
+                          value={[spec.params.stroke]}
+                          onValueChange={([v]) => updateParams({ stroke: v })}
+                          min={0}
+                          max={8}
+                          step={1}
+                          trackClassName="bg-neutral-200"
+                          rangeClassName="bg-neutral-900"
+                          thumbClassName="h-6 w-6 border-neutral-900"
+                        />
                       </div>
-                      <div>
-                        <Label>Corner Radius ({spec.params.cornerRadius}px)</Label>
-                        <Slider value={[spec.params.cornerRadius]} onValueChange={([v]) => updateParams({ cornerRadius: v })} min={0} max={64} step={2} className="mt-2" />
+                      <div className="space-y-4">
+                        <Label className="uppercase tracking-[0.2em] text-xs font-semibold mb-3">Corner Radius</Label>
+                        <Slider
+                          value={[spec.params.cornerRadius]}
+                          onValueChange={([v]) => updateParams({ cornerRadius: v })}
+                          min={0}
+                          max={64}
+                          step={2}
+                          trackClassName="bg-neutral-200"
+                          rangeClassName="bg-neutral-900"
+                          thumbClassName="h-6 w-6 border-neutral-900"
+                        />
                       </div>
-                      <div>
-                        <Label>Padding ({spec.params.padding}px)</Label>
-                        <Slider value={[spec.params.padding]} onValueChange={([v]) => updateParams({ padding: v })} min={0} max={40} step={2} className="mt-2" />
+                      <div className="space-y-4">
+                        <Label className="uppercase tracking-[0.2em] text-xs font-semibold mb-3">Padding</Label>
+                        <Slider
+                          value={[spec.params.padding]}
+                          onValueChange={([v]) => updateParams({ padding: v })}
+                          min={0}
+                          max={40}
+                          step={2}
+                          trackClassName="bg-neutral-200"
+                          rangeClassName="bg-neutral-900"
+                          thumbClassName="h-6 w-6 border-neutral-900"
+                        />
                       </div>
                       {/* Lockup spacing locked by renderer */}
-                    </div>
-                  )}
+                      </div>
+                    </SmoothAdvanced>
+                  ) : null}
+                  </AnimatePresence>
                 </div>
                 
               </CardContent>
@@ -359,29 +429,90 @@ export default function BrandKitGenerator() {
 
           {/* Right Panel: Preview */}
           <div className="space-y-6 h-[calc(100vh-220px)] overflow-auto pr-2">
+            {/* View toggles */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "hero", label: "Hero" },
+                { key: "header", label: "Website header" },
+                { key: "app", label: "App icon" },
+                { key: "card", label: "Business card" },
+                { key: "social", label: "Social profile" },
+              ].map(({ key, label }) => {
+                const k = key as typeof view;
+                const selected = view === k;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setView(k)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium border transition-colors outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 ${selected ? "bg-black text-white border-transparent" : "bg-card text-foreground border-neutral-300 hover:bg-neutral-100"}`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
             
             {/* Main Preview */}
             <Card className="shadow-none border-none">
               <CardContent className="">
-                <div 
-                  className="rounded-2xl aspect-square flex items-center justify-center overflow-hidden bg-black"
-                >
-                  {renderResult.lockup ? (
-                    <div
-                      key={`${spec.name}|${spec.iconId}|${spec.colors.primary}|${spec.template}`}
-                      className="w-full h-full grid place-items-center"
-                      style={{ transform: 'scale(0.8)', transformOrigin: 'center' }}
-                      dangerouslySetInnerHTML={{ __html: renderResult.lockup }}
-                    />
-                  ) : (
-                    <div className="text-gray-300 text-center">
-                      <div className="mb-2">Generating preview...</div>
-                      <small className="text-xs opacity-50">
-                        Brand: "{spec.name}" | Style: {spec.template} | Font: {spec.font}
-                      </small>
+                {view === "hero" && (
+                  <div
+                    className="mx-auto rounded-2xl flex items-center justify-center overflow-hidden bg-black aspect-square"
+                    style={{ width: 'min(100%, 640px, calc(100vh - 240px))' }}
+                  >
+                    {renderResult.lockup ? (
+                      <div
+                        key={`${spec.name}|${spec.iconId}|${spec.colors.primary}|${spec.template}`}
+                        className="w-full h-full grid place-items-center"
+                        style={{ transform: 'scale(0.8)', transformOrigin: 'center' }}
+                        dangerouslySetInnerHTML={{ __html: renderResult.lockup }}
+                      />
+                    ) : null}
+                  </div>
+                )}
+                {view === "header" && (
+                  <div className="mx-auto w-full max-w-3xl rounded-lg border bg-white">
+                    <div className="h-12 w-full border-b bg-neutral-50" />
+                    <div className="p-6">
+                      <div
+                        className="w-full"
+                        dangerouslySetInnerHTML={{ __html: renderLockupV2({ ...spec, template: 'left-lockup' }, 256) }}
+                      />
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+                {view === "app" && (
+                  <div className="mx-auto">
+                    <div className="grid grid-cols-3 gap-6">
+                      {[64, 128, 192].map((sz) => (
+                        <div key={sz} className="flex flex-col items-center gap-2">
+                          <AppIconMockup spec={spec} size={sz} />
+                          <span className="text-xs text-muted-foreground">{sz}×{sz}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {view === "card" && (
+                  <div className="mx-auto w-full max-w-3xl">
+                    <div className="aspect-[3/2] rounded-xl bg-white border grid place-items-center">
+                      <div className="scale-90" dangerouslySetInnerHTML={{ __html: renderLockupV2({ ...spec, template: 'left-lockup' }, 256) }} />
+                    </div>
+                  </div>
+                )}
+                {view === "social" && (
+                  <div className="mx-auto flex items-center gap-8">
+                    {[64, 96, 128].map((sz) => (
+                      <div key={sz} className="flex flex-col items-center gap-2">
+                        <div className="rounded-full overflow-hidden bg-black grid place-items-center" style={{ width: sz, height: sz }}>
+                          <div className="scale-75" dangerouslySetInnerHTML={{ __html: renderMarkV2(spec, 256) }} />
+                        </div>
+                        <span className="text-xs text-muted-foreground">{sz}×{sz}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
             
@@ -413,6 +544,48 @@ export default function BrandKitGenerator() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Smooth container with expand/collapse animation and scroll anchor
+function SmoothAdvanced({ children, innerRef }: { children: React.ReactNode; innerRef?: React.RefObject<HTMLDivElement> }) {
+  return (
+    <motion.div
+      ref={innerRef as any}
+      key="advanced"
+      initial={{ opacity: 0, height: 0, y: -4, filter: 'blur(2px)' }}
+      animate={{ opacity: 1, height: 'auto', y: 0, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, height: 0, y: -4, filter: 'blur(2px)' }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function ColorSwatchRow({ value, onChange, presets }: { value: string; onChange: (v: string) => void; presets: string[] }) {
+  return (
+    <div className="flex items-center gap-3">
+      {presets.map((c) => (
+        <button
+          key={c}
+          type="button"
+          aria-label={`Choose ${c}`}
+          onClick={() => onChange(c)}
+          className={`h-8 w-8 rounded-full border-2 ${value?.toLowerCase() === c.toLowerCase() ? 'border-black' : 'border-transparent'} shadow-sm`}
+          style={{ backgroundColor: c }}
+        />
+      ))}
+      <label className="relative h-8 w-8 rounded-full border-2 border-neutral-900 grid place-items-center cursor-pointer">
+        <span className="text-[12px] font-semibold">•••</span>
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="absolute inset-0 opacity-0 cursor-pointer"
+        />
+      </label>
     </div>
   );
 }

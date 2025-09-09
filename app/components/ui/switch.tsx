@@ -1,33 +1,3 @@
-import * as React from "react";
-import * as RadixSwitch from "@radix-ui/react-switch";
-import { cn } from "~/lib/utils";
-
-export type SwitchProps = React.ComponentProps<typeof RadixSwitch.Root> & {
-  checked?: boolean;
-  onCheckedChange?: (checked: boolean) => void;
-};
-
-export function Switch({ className, ...props }: SwitchProps) {
-  return (
-    <RadixSwitch.Root
-      className={cn(
-        "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors",
-        "focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-50",
-        "data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted",
-        className
-      )}
-      {...props}
-    >
-      <RadixSwitch.Thumb
-        className={cn(
-          "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform",
-          "data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-5"
-        )}
-      />
-    </RadixSwitch.Root>
-  );
-}
-
 "use client"
 
 import * as React from "react"

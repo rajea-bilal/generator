@@ -23,6 +23,7 @@ const routes: RouteConfig = [
   
   // Brand Kit Generator
   route("brand-kit", "routes/brand-kit.tsx"),
+  route("brand-fast-start", "routes/brand-fast-start.tsx"),
   
   // API Routes
   route("api/export", "routes/api+/export.ts"),

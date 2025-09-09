@@ -9,6 +9,13 @@ export default defineConfig({
     reactRouter(), 
     tsconfigPaths(),
   ],
+  resolve: {
+    // Ensure a single React instance is bundled – avoids context/provider null issues
+    dedupe: ["react", "react-dom", "react/jsx-runtime"],
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom"],
+  },
   server: {
     allowedHosts: ["146cecc0009a.ngrok.app"],
   },
