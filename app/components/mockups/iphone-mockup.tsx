@@ -52,16 +52,16 @@ export function IPhoneMockup({ spec }: Props) {
 				<div 
 					className="absolute rounded-full overflow-hidden border-0 shadow-lg grid place-items-center"
 					style={{
-						// Tuned to overlay the X profile avatar exactly
-						top: '15.1%',
-						left: '9.2%',
-						width: '11.8%',
-						height: '7.0%',
+						// Positioned to exactly overlay the X profile avatar circle
+						top: '13.7%',
+						left: '8.4%',
+						width: '15.5%',
+						height: '8.1%',
 						background: profileSpec.colors.background
 					}}
 				>
 					{/* Inner box ~94% so the logo appears larger while staying inside the circle */}
-					<div className="w-[94%] h-[94%]">
+					<div className="w-[70%] h-[70%]">
 						<div className="w-full h-full" dangerouslySetInnerHTML={{ __html: svg }} />
 					</div>
 				</div>

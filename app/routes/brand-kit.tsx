@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getInitialFromName } from '../lib/brand-kit';
-import { defaultSpecV2, renderSvgsV2, renderFormatsV2, renderMarkV2, renderLockupV2, type BrandSpecV2 } from '../lib/brand-kit';
+import { defaultSpecV2, renderSvgsV2, renderFormatsV2, renderMarkV2, renderLockupV2, type BrandSpecV2, gradientPresets } from '../lib/brand-kit';
 import { AppIconMockup } from "../components/mockups/app-icon";
 import { BrowserMockup } from "../components/mockups/browser-mockup";
 import { IPhoneMockup } from "../components/mockups/iphone-mockup";
@@ -163,6 +163,22 @@ export default function BrandKitGenerator() {
     }));
   };
   
+  // Handler for background selection (solid color or gradient)
+  const handleBackgroundChange = (bg: BrandSpecV2['background']) => {
+    setSpec(prev => ({ 
+      ...prev, 
+      background: bg,
+      // Update colors.background for form consistency when it's a solid
+      colors: bg.type === 'solid' ? 
+        { ...prev.colors, background: bg.color } : 
+        prev.colors
+    }));
+    // Update form if it's a solid color
+    if (bg.type === 'solid') {
+      form.setValue('colors.background', bg.color);
+    }
+  };
+
   // Handle export
   const handleExport = async () => {
     setIsExporting(true);
@@ -340,15 +356,12 @@ export default function BrandKitGenerator() {
                     </div>
                   </div>
                   <div>
-                    <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Background Color</FormLabel>
+                    <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Background</FormLabel>
                     <div className="mt-2">
-                      <FormField control={form.control} name="colors.background" render={({ field }) => (
-                        <ColorSwatchRow
-                          value={field.value}
-                          onChange={(v) => field.onChange(v)}
-                          presets={["#000000", "#0B0B0F", "#111827", "#FFFFFF", "#F9FAFB", "#FFF7ED"]}
-                        />
-                      )} />
+                      <BackgroundPicker
+                        value={spec.background}
+                        onChange={handleBackgroundChange}
+                      />
                     </div>
                   </div>
                   <div>
@@ -645,6 +658,68 @@ function ColorSwatchRow({ value, onChange, presets }: { value: string; onChange:
           className="absolute inset-0 opacity-0 cursor-pointer"
         />
       </label>
+    </div>
+  );
+}
+
+function BackgroundPicker({ value, onChange }: { value: BrandSpecV2['background']; onChange: (bg: BrandSpecV2['background']) => void }) {
+  const solidPresets = ["#000000", "#0B0B0F", "#111827", "#FFFFFF", "#F9FAFB", "#FFF7ED"];
+  
+  return (
+    <div className="space-y-4">
+      {/* Solid Colors */}
+      <div>
+        <div className="text-xs text-muted-foreground mb-2">Solid Colors</div>
+        <div className="flex items-center gap-3">
+          {solidPresets.map((color) => {
+            const isSelected = value.type === 'solid' && value.color.toLowerCase() === color.toLowerCase();
+            return (
+              <button
+                key={color}
+                type="button"
+                aria-label={`Choose ${color}`}
+                onClick={() => onChange({ type: 'solid', color })}
+                className={`h-8 w-8 rounded-full border-2 ${isSelected ? 'border-black' : 'border-transparent'} shadow-sm`}
+                style={{ backgroundColor: color }}
+              />
+            );
+          })}
+          <label className="relative h-8 w-8 rounded-full border-2 border-neutral-900 grid place-items-center cursor-pointer">
+            <span className="text-[12px] font-semibold">•••</span>
+            <input
+              type="color"
+              value={value.type === 'solid' ? value.color : '#000000'}
+              onChange={(e) => onChange({ type: 'solid', color: e.target.value })}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+          </label>
+        </div>
+      </div>
+      
+      {/* Gradients */}
+      <div>
+        <div className="text-xs text-muted-foreground mb-2">Gradients</div>
+        <div className="flex items-center gap-3 flex-wrap">
+          {gradientPresets.map((gradient, index) => {
+            const isSelected = value.type === 'linear-gradient' && 
+              value.angle === gradient.angle && 
+              JSON.stringify(value.stops) === JSON.stringify(gradient.stops);
+            
+            const gradientStyle = `linear-gradient(${gradient.angle}deg, ${gradient.stops.map(s => `${s.color} ${s.at * 100}%`).join(', ')})`;
+            
+            return (
+              <button
+                key={index}
+                type="button"
+                aria-label={`Choose gradient ${index + 1}`}
+                onClick={() => onChange(gradient)}
+                className={`h-8 w-8 rounded-full border-2 ${isSelected ? 'border-black' : 'border-transparent'} shadow-sm`}
+                style={{ background: gradientStyle }}
+              />
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

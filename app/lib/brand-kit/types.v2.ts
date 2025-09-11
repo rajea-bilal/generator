@@ -37,6 +37,18 @@ export type BrandSpecV2 = {
   };
 };
 
+// Gradient presets for backgrounds
+export const gradientPresets: BgLinear[] = [
+  { type: "linear-gradient", angle: 45, stops: [{ color: "#FF6B6B", at: 0 }, { color: "#4ECDC4", at: 1 }] },
+  { type: "linear-gradient", angle: 135, stops: [{ color: "#667eea", at: 0 }, { color: "#764ba2", at: 1 }] },
+  { type: "linear-gradient", angle: 45, stops: [{ color: "#f093fb", at: 0 }, { color: "#f5576c", at: 1 }] },
+  { type: "linear-gradient", angle: 90, stops: [{ color: "#4facfe", at: 0 }, { color: "#00f2fe", at: 1 }] },
+  { type: "linear-gradient", angle: 45, stops: [{ color: "#43e97b", at: 0 }, { color: "#38f9d7", at: 1 }] },
+  { type: "linear-gradient", angle: 135, stops: [{ color: "#fa709a", at: 0 }, { color: "#fee140", at: 1 }] },
+  { type: "linear-gradient", angle: 90, stops: [{ color: "#a8edea", at: 0 }, { color: "#fed6e3", at: 1 }] },
+  { type: "linear-gradient", angle: 45, stops: [{ color: "#000000", at: 0 }, { color: "#434343", at: 1 }] },
+];
+
 export const defaultSpecV2: BrandSpecV2 = {
   version: 2,
   name: "",
