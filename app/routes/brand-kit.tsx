@@ -9,6 +9,10 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getInitialFromName } from '../lib/brand-kit';
 import { defaultSpecV2, renderSvgsV2, renderFormatsV2, renderMarkV2, renderLockupV2, type BrandSpecV2 } from '../lib/brand-kit';
 import { AppIconMockup } from "../components/mockups/app-icon";
+import { BrowserMockup } from "../components/mockups/browser-mockup";
+import { IPhoneMockup } from "../components/mockups/iphone-mockup";
+import { NativeIOSMockup } from "../components/mockups/native-ios-mockup";
+import { WebsiteMockup } from "../components/mockups/website-mockup";
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -34,6 +38,7 @@ const BrandSchema = z.object({
   colors: z.object({
     primary: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, 'Invalid hex'),
     text: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, 'Invalid hex'),
+    background: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, 'Invalid hex'),
   }),
 });
 
@@ -52,7 +57,7 @@ export default function BrandKitGenerator() {
   const [spec, setSpec] = useState<BrandSpecV2>(defaultSpecV2);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [view, setView] = useState<"hero" | "header" | "app" | "card" | "social">("hero");
+  const [view, setView] = useState<"hero" | "header" | "app" | "card" | "social" | "browser" | "phone" | "ios" | "website">("hero");
   
   // Hydrate defaults from query string (Fast Start wizard)
   useEffect(() => {
@@ -65,6 +70,7 @@ export default function BrandKitGenerator() {
       const iconId = params.get('iconId');
       const primary = params.get('primary');
       const text = params.get('text');
+      const background = params.get('background');
 
       if (name) next.name = name;
       if (name) next.initial = getInitialFromName(name);
@@ -73,9 +79,13 @@ export default function BrandKitGenerator() {
       if (iconId) next.iconId = iconId;
       if (primary) next.colors.primary = primary;
       if (text) next.colors.text = text;
+      if (background) {
+        next.colors.background = background;
+        (next as any).background = { type: 'solid', color: background };
+      }
 
       // Only update if at least one param provided
-      if (name || template || font || iconId || primary || text) {
+      if (name || template || font || iconId || primary || text || background) {
         setSpec(next);
       }
     } catch {}
@@ -88,7 +98,7 @@ export default function BrandKitGenerator() {
       font: spec.font,
       template: spec.template,
       iconId: spec.iconId,
-      colors: { primary: spec.colors.primary, text: spec.colors.text },
+      colors: { primary: spec.colors.primary, text: spec.colors.text, background: spec.colors.background },
     },
     mode: 'onChange',
   });
@@ -108,7 +118,12 @@ export default function BrandKitGenerator() {
           ...prev.colors,
           primary: values.colors?.primary ?? prev.colors.primary,
           text: values.colors?.text ?? prev.colors.text,
+          background: values.colors?.background ?? prev.colors.background,
         },
+        // Keep renderer background in sync with the chosen background color
+        background: values.colors?.background
+          ? ({ type: 'solid', color: values.colors.background } as const)
+          : prev.background,
       }));
     });
     return () => sub.unsubscribe();
@@ -227,7 +242,20 @@ export default function BrandKitGenerator() {
                         <FormItem>
                           <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Brand Name</FormLabel>
                           <FormControl>
-                            <Input className="h-12 text-lg placeholder:text-lg placeholder:text-zinc-300" placeholder="Enter brand name" {...field} />
+                            <div className="flex items-center gap-3">
+                              <Input className="h-12 text-lg placeholder:text-lg placeholder:text-zinc-300" placeholder="Enter brand name" {...field} />
+                              {field.value && (
+                                <Button 
+                                  type="button" 
+                                  variant="secondary" 
+                                  size="sm"
+                                  onClick={() => field.onChange('')}
+                                  className="whitespace-nowrap"
+                                >
+                                  Clear Text
+                                </Button>
+                              )}
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -307,6 +335,18 @@ export default function BrandKitGenerator() {
                           value={field.value}
                           onChange={(v) => field.onChange(v)}
                           presets={["#F97316", "#EF4444", "#06B6D4", "#10B981", "#8B5CF6", "#FFF7ED"]}
+                        />
+                      )} />
+                    </div>
+                  </div>
+                  <div>
+                    <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Background Color</FormLabel>
+                    <div className="mt-2">
+                      <FormField control={form.control} name="colors.background" render={({ field }) => (
+                        <ColorSwatchRow
+                          value={field.value}
+                          onChange={(v) => field.onChange(v)}
+                          presets={["#000000", "#0B0B0F", "#111827", "#FFFFFF", "#F9FAFB", "#FFF7ED"]}
                         />
                       )} />
                     </div>
@@ -435,6 +475,10 @@ export default function BrandKitGenerator() {
                 { key: "hero", label: "Hero" },
                 { key: "header", label: "Website header" },
                 { key: "app", label: "App icon" },
+                { key: "browser", label: "Browser" },
+                { key: "phone", label: "Phone" },
+                { key: "ios", label: "iOS" },
+                { key: "website", label: "Website" },
                 { key: "card", label: "Business card" },
                 { key: "social", label: "Social profile" },
               ].map(({ key, label }) => {
@@ -458,8 +502,11 @@ export default function BrandKitGenerator() {
               <CardContent className="">
                 {view === "hero" && (
                   <div
-                    className="mx-auto rounded-2xl flex items-center justify-center overflow-hidden bg-black aspect-square"
-                    style={{ width: 'min(100%, 640px, calc(100vh - 240px))' }}
+                    className="mx-auto rounded-2xl flex items-center justify-center overflow-hidden aspect-square"
+                    style={{
+                      width: 'min(100%, 640px, calc(100vh - 240px))',
+                      backgroundColor: spec.colors.background,
+                    }}
                   >
                     {renderResult.lockup ? (
                       <div
@@ -512,6 +559,18 @@ export default function BrandKitGenerator() {
                       </div>
                     ))}
                   </div>
+                )}
+                {view === "browser" && (
+                  <BrowserMockup spec={spec} />
+                )}
+                {view === "phone" && (
+                  <IPhoneMockup spec={spec} />
+                )}
+                {view === "ios" && (
+                  <NativeIOSMockup spec={spec} />
+                )}
+                {view === "website" && (
+                  <WebsiteMockup spec={spec} />
                 )}
               </CardContent>
             </Card>

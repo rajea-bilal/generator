@@ -96,13 +96,13 @@ export function renderMarkV2(spec: BrandSpecV2, size: number = 256): string {
 
 export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
   const font = fontFamilies[spec.font];
-  const text = (spec.name || 'Brand').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const text = (spec.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   // For left-lockup we render the mark at a larger explicit size to create a bold look without clipping
   const markSize = Math.round(size * 1.18);
   const fontSize = Math.round(markSize / 3.0); // larger text size
 
-  // If there is no icon selected, center the text within a nicely padded canvas
-  if (!spec.iconId) {
+  // If there is no icon selected but we have text, center the text within a nicely padded canvas
+  if (!spec.iconId && text) {
     const horizontalPadding = 64;
     const verticalPadding = 48;
     const textWidth = estimateTextWidthPx(text, fontSize);
@@ -111,6 +111,11 @@ export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
     const bgRect = `<rect width="${width}" height="${height}" fill="${spec.background.type === 'solid' ? spec.background.color : spec.colors.background}" />`;
     const textBlock = `<text x="${width / 2}" y="${height / 2}" font-family="${font}" font-size="${fontSize}" font-weight="600" fill="${spec.colors.text}" dominant-baseline="middle" text-anchor="middle">${text}</text>`;
     return `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${bgRect}${textBlock}</svg>`;
+  }
+
+  // If there's an icon but no text, render just the mark (icon-only mode)
+  if (spec.iconId && !text) {
+    return renderMarkV2(spec, size);
   }
 
   if (spec.template === 'mark-only') {
@@ -129,8 +134,8 @@ export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
     // Layout with asymmetric padding to bias content slightly left in the preview
     const leftPadding = 8;
     const rightPadding = 56;
-    const textWidth = estimateTextWidthPx(text, fontSize);
-    width = leftPadding + markSize + gap + textWidth + rightPadding;
+    const textWidth = text ? estimateTextWidthPx(text, fontSize) : 0;
+    width = leftPadding + markSize + (text ? gap + textWidth : 0) + rightPadding;
     height = markSize; // bound to larger mark size
 
     const mark = renderMarkV2(spec, markSize)
@@ -139,15 +144,15 @@ export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
 
     const markGroup = `<g transform="translate(${leftPadding}, 0)">${mark}</g>`;
     const textX = leftPadding + markSize + gap - optical;
-    const textBlock = `<text x="${textX}" y="${markSize / 2}" font-family="${font}" font-size="${fontSize}" font-weight="600" fill="${spec.colors.text}" dominant-baseline="middle">${text}</text>`;
+    const textBlock = text ? `<text x="${textX}" y="${markSize / 2}" font-family="${font}" font-size="${fontSize}" font-weight="600" fill="${spec.colors.text}" dominant-baseline="middle">${text}</text>` : '';
 
     const bgRect = `<rect width="${width}" height="${height}" fill="${spec.background.type === 'solid' ? spec.background.color : spec.colors.background}" />`;
     content = `${bgRect}${markGroup}${textBlock}`;
   } else if (spec.template === 'stacked') {
-    // Mark centered horizontally, text centered below
-    const verticalGap = 64;
-    const bottomPadding = 32;
-    height = size + verticalGap + fontSize + bottomPadding;
+    // Mark centered horizontally, text centered below (if text exists)
+    const verticalGap = text ? 64 : 0;
+    const bottomPadding = text ? 32 : 48;
+    height = size + verticalGap + (text ? fontSize : 0) + bottomPadding;
     width = size + 48 + 48; // symmetric horizontal padding
 
     const mark = renderMarkV2(spec, size)
@@ -156,7 +161,7 @@ export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
 
     const leftPadding = 48;
     const markGroup = `<g transform="translate(${leftPadding}, 0)">${mark}</g>`;
-    const textBlock = `<text x="${width / 2}" y="${size + verticalGap}" font-family="${font}" font-size="${fontSize}" font-weight="600" fill="${spec.colors.text}" dominant-baseline="middle" text-anchor="middle">${text}</text>`;
+    const textBlock = text ? `<text x="${width / 2}" y="${size + verticalGap}" font-family="${font}" font-size="${fontSize}" font-weight="600" fill="${spec.colors.text}" dominant-baseline="middle" text-anchor="middle">${text}</text>` : '';
     const bgRect = `<rect width="${width}" height="${height}" fill="${spec.background.type === 'solid' ? spec.background.color : spec.colors.background}" />`;
     content = `${bgRect}${markGroup}${textBlock}`;
   } else if (spec.template === 'badge') {
