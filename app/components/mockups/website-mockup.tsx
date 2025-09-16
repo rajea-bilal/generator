@@ -1,5 +1,5 @@
 import * as React from "react";
-import { renderLockupV2 } from "../../lib/brand-kit";
+import { generateAllAssets, getAssetForContext } from "../../lib/brand-kit";
 import type { BrandSpecV2 } from "../../lib/brand-kit";
 
 type Props = {
@@ -12,11 +12,10 @@ type Props = {
  * Display generated logo lockup in website navigation bar mockup
  */
 export function WebsiteMockup({ spec }: Props) {
-	// Render lockup SVG for website header with proper contrast
+	// Website headers use context-aware selection (lockup preferred, wordmark fallback)
 	const websiteSpec = React.useMemo(() => {
 		return {
 			...spec,
-			template: 'left-lockup' as const,
 			colors: {
 				...spec.colors,
 				text: '#FFFFFF', // White text for visibility on website
@@ -25,7 +24,13 @@ export function WebsiteMockup({ spec }: Props) {
 		};
 	}, [spec]);
 	
-	const svg = React.useMemo(() => renderLockupV2(websiteSpec, 128), [websiteSpec]);
+	const assets = React.useMemo(() => {
+		return generateAllAssets(websiteSpec, 128);
+	}, [websiteSpec]);
+	
+	const svg = React.useMemo(() => {
+		return getAssetForContext(assets, 'website-header');
+	}, [assets]);
 
 	return (
 		<div className="mx-auto w-full max-w-4xl">

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { renderMarkV2 } from "../../lib/brand-kit";
+import { generateAllAssets, getAssetForContext } from "../../lib/brand-kit";
 import type { BrandSpecV2 } from "../../lib/brand-kit";
 
 type Props = {
@@ -12,20 +12,24 @@ type Props = {
  * Display generated icon as app icon in iOS home screen mockup
  */
 export function NativeIOSMockup({ spec }: Props) {
-	// Always render mark-only for native iOS app icon. We also enforce
-	// strong foreground contrast and zero padding so the mark fills the icon.
+	// Always use app-icon context for native iOS app icon with zero padding
 	const svgSpec = React.useMemo(() => {
 		const primaryColor = spec.colors.primary;
 		const isLightBackground = primaryColor && primaryColor !== '#000000' && primaryColor !== '#0B0B0F';
 		return {
 			...spec,
-			template: 'mark-only' as const,
 			colors: { ...spec.colors, text: isLightBackground ? '#000000' : '#FFFFFF' },
 			params: { ...spec.params, padding: 0 },
 		};
 	}, [spec]);
 	
-	const svg = React.useMemo(() => renderMarkV2(svgSpec, 256), [svgSpec]);
+	const assets = React.useMemo(() => {
+		return generateAllAssets(svgSpec, 256);
+	}, [svgSpec]);
+	
+	const svg = React.useMemo(() => {
+		return getAssetForContext(assets, 'app-icon');
+	}, [assets]);
 
 	return (
 		<div className="mx-auto w-full max-w-4xl">

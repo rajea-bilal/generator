@@ -1,5 +1,5 @@
 import * as React from "react";
-import { renderMarkV2 } from "../../lib/brand-kit";
+import { generateAllAssets, getAssetForContext } from "../../lib/brand-kit";
 import type { BrandSpecV2 } from "../../lib/brand-kit";
 
 type Props = {
@@ -12,11 +12,10 @@ type Props = {
  * Display generated logo as profile avatar in iPhone X profile mockup
  */
 export function IPhoneMockup({ spec }: Props) {
-	// For social profiles, use mark-only with contrasting colors and proper sizing
+	// For social profiles, always use social-avatar context (icon or monogram)
 	const profileSpec = React.useMemo(() => {
 		return {
 			...spec,
-			template: 'mark-only' as const,
 			colors: {
 				...spec.colors,
 				// Use current primary for mark; use background from spec (do NOT match primary)
@@ -28,18 +27,27 @@ export function IPhoneMockup({ spec }: Props) {
 		};
 	}, [spec]);
 	
+	const assets = React.useMemo(() => {
+		return generateAllAssets(profileSpec, 256);
+	}, [profileSpec]);
+	
 	const svg = React.useMemo(() => {
-		// Render high-res, then make the SVG responsive to fit the circle naturally
-		let s = renderMarkV2(profileSpec, 256);
+		// Get appropriate asset for social avatar context
+		let s = getAssetForContext(assets, 'social-avatar');
 		s = s
 			.replace(/width="[^"]+"/i, 'width="100%"')
 			.replace(/height="[^"]+"/i, 'height="100%"')
-			.replace(/preserveAspectRatio="[^"]+"/i, 'preserveAspectRatio="xMidYMid meet"');
+			.replace(/preserveAspectRatio="[^"]+"/i, 'preserveAspectRatio="xMidYMid meet"')
+			// Remove background rect to make it transparent since we're showing gradient on the container
+			.replace(/<rect[^>]*fill="[^"]*"[^>]*\/?>(?:<\/rect>)?/g, '');
 		return s;
-	}, [profileSpec]);
+	}, [assets]);
 
 	return (
 		<div className="mx-auto w-full max-w-sm">
+			<p className="mb-2 text-xs text-muted-foreground">
+				Note: Social profile avatars automatically show icon-only or monogram. Text-based logos will display as a monogram.
+			</p>
 			<div className="relative rounded-3xl overflow-hidden shadow-2xl">
 				{/* iPhone mockup background */}
 				<img 
@@ -57,7 +65,9 @@ export function IPhoneMockup({ spec }: Props) {
 						left: '8.4%',
 						width: '15.5%',
 						height: '8.1%',
-						background: profileSpec.colors.background
+						background: spec.background.type === 'solid' 
+							? spec.background.color
+							: `linear-gradient(${spec.background.angle}deg, ${spec.background.stops.map(s => `${s.color} ${s.at * 100}%`).join(', ')})`
 					}}
 				>
 					{/* Inner box ~94% so the logo appears larger while staying inside the circle */}

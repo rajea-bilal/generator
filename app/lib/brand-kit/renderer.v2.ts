@@ -1,4 +1,4 @@
-import { type BrandSpecV2, type BackgroundSpec } from './types.v2';
+import { type BrandSpecV2, type BackgroundSpec, type BrandAssets, type AssetContext } from './types.v2';
 import { ALL_ICONS } from './icons/registry';
 import { shapeRoundedSquare, shapeCircle, shapeCapsule } from './icons/shapes';
 import { fontFamilies } from './types';
@@ -88,6 +88,146 @@ function estimateTextWidthPx(text: string, fontSizePx: number): number {
   return text.length * fontSizePx * averageEmWidth;
 }
 
+// =============== NEW SEPARATE ASSET RENDER FUNCTIONS ===============
+
+/**
+ * Renders icon/mark only asset (without text)
+ */
+export function renderIconAsset(spec: BrandSpecV2, size: number = 256): string | null {
+  // Return null if no icon is specified
+  if (!spec.iconId) return null;
+  
+  return renderMarkV2(spec, size);
+}
+
+/**
+ * Renders text-only wordmark asset
+ */
+export function renderWordmarkAsset(spec: BrandSpecV2, size: number = 256): string {
+  const font = fontFamilies[spec.font];
+  const text = (spec.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  
+  if (!text) {
+    // Return empty wordmark if no text
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>`;
+  }
+  
+  const fontSize = Math.round(size / 6); // Responsive font size
+  const horizontalPadding = Math.round(size * 0.2);
+  const verticalPadding = Math.round(size * 0.15);
+  const textWidth = estimateTextWidthPx(text, fontSize);
+  const width = textWidth + horizontalPadding * 2;
+  const height = fontSize + verticalPadding * 2;
+  
+  const bgRect = `<rect width="${width}" height="${height}" fill="${spec.background.type === 'solid' ? spec.background.color : spec.colors.background}" />`;
+  const textBlock = `<text x="${width / 2}" y="${height / 2}" font-family="${font}" font-size="${fontSize}" font-weight="600" fill="${spec.colors.text}" dominant-baseline="middle" text-anchor="middle">${text}</text>`;
+  
+  return `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${bgRect}${textBlock}</svg>`;
+}
+
+/**
+ * Renders monogram fallback from brand name initials
+ */
+export function renderMonogramAsset(spec: BrandSpecV2, size: number = 256): string | null {
+  const text = spec.name.trim();
+  if (!text) return null;
+  
+  // Get first 1-2 letters as monogram
+  const words = text.split(/\s+/);
+  let monogram = '';
+  if (words.length === 1) {
+    monogram = words[0].substring(0, 2).toUpperCase();
+  } else {
+    monogram = words.slice(0, 2).map(w => w.charAt(0)).join('').toUpperCase();
+  }
+  
+  const font = fontFamilies[spec.font];
+  const fontSize = Math.round(size / 3);
+  const bg = renderBackground(spec.background, size);
+  
+  const textBlock = `<text x="${size / 2}" y="${size / 2}" font-family="${font}" font-size="${fontSize}" font-weight="700" fill="${spec.colors.text}" dominant-baseline="middle" text-anchor="middle">${monogram}</text>`;
+  
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${bg}${textBlock}</svg>`;
+}
+
+/**
+ * Renders lockup asset in specified layout
+ */
+export function renderLockupAsset(spec: BrandSpecV2, layout: 'left' | 'stacked' | 'badge', size: number = 256): string {
+  // Use existing renderLockupV2 function with forced heroStyle
+  const lockupSpec = { ...spec, heroStyle: `${layout}-lockup` as any };
+  if (layout === 'left') {
+    return renderLockupV2({ ...lockupSpec, heroStyle: 'left-lockup' }, size);
+  } else if (layout === 'stacked') {
+    return renderLockupV2({ ...lockupSpec, heroStyle: 'stacked' }, size);
+  } else {
+    return renderLockupV2({ ...lockupSpec, heroStyle: 'badge' }, size);
+  }
+}
+
+/**
+ * Generates all brand assets at once
+ */
+export function generateAllAssets(spec: BrandSpecV2, size: number = 256): BrandAssets {
+  const icon = renderIconAsset(spec, size);
+  const wordmark = renderWordmarkAsset(spec, size);
+  const monogram = renderMonogramAsset(spec, size);
+  
+  const lockups = {
+    left: renderLockupAsset(spec, 'left', size),
+    stacked: renderLockupAsset(spec, 'stacked', size),
+    badge: renderLockupAsset(spec, 'badge', size),
+  };
+  
+  return {
+    icon: icon || undefined,
+    wordmark,
+    monogram: monogram || undefined,
+    lockups,
+  };
+}
+
+/**
+ * Smart asset selection based on context
+ */
+export function getAssetForContext(assets: BrandAssets, context: AssetContext, fallbackToHeroStyle?: string): string {
+  switch (context) {
+    case 'favicon':
+    case 'social-avatar':
+    case 'app-icon':
+      // Always prefer icon, fallback to monogram, then wordmark
+      return assets.icon || assets.monogram || assets.wordmark;
+      
+    case 'website-header':
+      // Prefer left lockup, fallback to wordmark if no icon
+      return assets.icon ? assets.lockups.left : assets.wordmark;
+      
+    case 'business-card':
+      // Default to left lockup, but could be configurable
+      return assets.lockups.left;
+      
+    case 'hero-preview':
+      // Use the user's selected hero style
+      if (fallbackToHeroStyle === 'mark-only') {
+        return assets.icon || assets.monogram || assets.wordmark;
+      } else if (fallbackToHeroStyle === 'left-lockup') {
+        return assets.lockups.left;
+      } else if (fallbackToHeroStyle === 'stacked') {
+        return assets.lockups.stacked;
+      } else if (fallbackToHeroStyle === 'badge') {
+        return assets.lockups.badge;
+      }
+      return assets.lockups.left; // default fallback
+      
+    case 'export':
+      // For exports, return all assets (handled differently)
+      return assets.wordmark; // or could return a combined object
+      
+    default:
+      return assets.wordmark;
+  }
+}
+
 export function renderMarkV2(spec: BrandSpecV2, size: number = 256): string {
   const bg = renderBackground(spec.background, size);
   const icon = renderIconOrShape(spec, size);
@@ -118,7 +258,7 @@ export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
     return renderMarkV2(spec, size);
   }
 
-  if (spec.template === 'mark-only') {
+  if (spec.heroStyle === 'mark-only') {
     return renderMarkV2(spec, size);
   }
  
@@ -126,7 +266,7 @@ export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
   let height = size;
   let content = '';
 
-  if (spec.template === 'left-lockup') {
+  if (spec.heroStyle === 'left-lockup') {
     const gapUser = Math.min(48, Math.max(0, Math.round(spec.params.lockupGap)));
     const gap = 16; // bolder spacing to separate icon and wordmark
     const optical = 8; // moderate optical compensation
@@ -148,7 +288,7 @@ export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
 
     const bgRect = `<rect width="${width}" height="${height}" fill="${spec.background.type === 'solid' ? spec.background.color : spec.colors.background}" />`;
     content = `${bgRect}${markGroup}${textBlock}`;
-  } else if (spec.template === 'stacked') {
+  } else if (spec.heroStyle === 'stacked') {
     // Mark centered horizontally, text centered below (if text exists)
     const verticalGap = text ? 64 : 0;
     const bottomPadding = text ? 32 : 48;
@@ -164,7 +304,7 @@ export function renderLockupV2(spec: BrandSpecV2, size: number = 256): string {
     const textBlock = text ? `<text x="${width / 2}" y="${size + verticalGap}" font-family="${font}" font-size="${fontSize}" font-weight="600" fill="${spec.colors.text}" dominant-baseline="middle" text-anchor="middle">${text}</text>` : '';
     const bgRect = `<rect width="${width}" height="${height}" fill="${spec.background.type === 'solid' ? spec.background.color : spec.colors.background}" />`;
     content = `${bgRect}${markGroup}${textBlock}`;
-  } else if (spec.template === 'badge') {
+  } else if (spec.heroStyle === 'badge') {
     // Keep height equal to size; center the badge vertically
     const leftPadding = 24;
     width = size + leftPadding + size; // rough badge width beside mark
@@ -208,10 +348,10 @@ export function renderFormatsV2(spec: BrandSpecV2): {
   inverseLockup: string;
   inverseMarkOnly: string;
 } {
-  const baseLockup = renderLockupV2({ ...spec, template: 'left-lockup' }, 256);
+  const baseLockup = renderLockupV2({ ...spec, heroStyle: 'left-lockup' }, 256);
   const baseMark = renderMarkV2(spec, 256);
   const inv = inverseSpec(spec);
-  const invLock = renderLockupV2({ ...inv, template: 'left-lockup' }, 256);
+  const invLock = renderLockupV2({ ...inv, heroStyle: 'left-lockup' }, 256);
   const invMark = renderMarkV2(inv, 256);
   return { lockup: baseLockup, markOnly: baseMark, inverseLockup: invLock, inverseMarkOnly: invMark };
 } 

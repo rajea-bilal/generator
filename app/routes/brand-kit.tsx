@@ -7,11 +7,11 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getInitialFromName } from '../lib/brand-kit';
-import { defaultSpecV2, renderSvgsV2, renderFormatsV2, renderMarkV2, renderLockupV2, type BrandSpecV2, gradientPresets } from '../lib/brand-kit';
+import { defaultSpecV2, renderSvgsV2, renderFormatsV2, renderMarkV2, renderLockupV2, generateAllAssets, getAssetForContext, type BrandSpecV2 } from '../lib/brand-kit';
 import { AppIconMockup } from "../components/mockups/app-icon";
 import { BrowserMockup } from "../components/mockups/browser-mockup";
 import { IPhoneMockup } from "../components/mockups/iphone-mockup";
-import { NativeIOSMockup } from "../components/mockups/native-ios-mockup";
+import { MacOSMockup } from "../components/mockups/macos-mockup";
 import { WebsiteMockup } from "../components/mockups/website-mockup";
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
@@ -33,7 +33,7 @@ const dbg = (...args: any[]) => console.debug('[BrandKit]', ...args);
 const BrandSchema = z.object({
   name: z.string().min(1, 'Brand name is required').max(40),
   font: z.enum(['Inter', 'Sora', 'Manrope', 'Outfit']),
-  template: z.enum(['mark-only', 'left-lockup', 'stacked', 'badge']), 
+  heroStyle: z.enum(['mark-only', 'left-lockup', 'stacked', 'badge']), 
   iconId: z.string(),
   colors: z.object({
     primary: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, 'Invalid hex'),
@@ -57,7 +57,7 @@ export default function BrandKitGenerator() {
   const [spec, setSpec] = useState<BrandSpecV2>(defaultSpecV2);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [view, setView] = useState<"hero" | "header" | "app" | "card" | "social" | "browser" | "phone" | "ios" | "website">("hero");
+  const [view, setView] = useState<"hero" | "header" | "app" | "card" | "social" | "browser" | "phone" | "macos" | "website">("hero");
   
   // Hydrate defaults from query string (Fast Start wizard)
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function BrandKitGenerator() {
       const params = new URLSearchParams(window.location.search);
       const next = { ...defaultSpecV2 };
       const name = params.get('name') || '';
-      const template = params.get('template') as BrandSpecV2['template'] | null;
+      const heroStyle = params.get('heroStyle') as BrandSpecV2['heroStyle'] | null;
       const font = params.get('font') as BrandSpecV2['font'] | null;
       const iconId = params.get('iconId');
       const primary = params.get('primary');
@@ -74,7 +74,7 @@ export default function BrandKitGenerator() {
 
       if (name) next.name = name;
       if (name) next.initial = getInitialFromName(name);
-      if (template) next.template = template;
+      if (heroStyle) next.heroStyle = heroStyle;
       if (font) next.font = font;
       if (iconId) next.iconId = iconId;
       if (primary) next.colors.primary = primary;
@@ -85,7 +85,7 @@ export default function BrandKitGenerator() {
       }
 
       // Only update if at least one param provided
-      if (name || template || font || iconId || primary || text || background) {
+      if (name || heroStyle || font || iconId || primary || text || background) {
         setSpec(next);
       }
     } catch {}
@@ -96,7 +96,7 @@ export default function BrandKitGenerator() {
     defaultValues: {
       name: spec.name,
       font: spec.font,
-      template: spec.template,
+      heroStyle: spec.heroStyle,
       iconId: spec.iconId,
       colors: { primary: spec.colors.primary, text: spec.colors.text, background: spec.colors.background },
     },
@@ -112,7 +112,7 @@ export default function BrandKitGenerator() {
         // Derive initial from brand name (first character or sensible default)
         initial: getInitialFromName(values.name ?? prev.name),
         font: (values.font as BrandSpecV2['font']) ?? prev.font,
-        template: (values.template as BrandSpecV2['template']) ?? prev.template,
+        heroStyle: (values.heroStyle as BrandSpecV2['heroStyle']) ?? prev.heroStyle,
         iconId: values.iconId ?? prev.iconId,
         colors: {
           ...prev.colors,
@@ -139,6 +139,37 @@ export default function BrandKitGenerator() {
       return { mark: '', lockup: '' };
     }
   }, [spec]);
+  
+  // Generate all brand assets and select appropriate one for hero preview
+  const brandAssets = useMemo(() => {
+    try {
+      return generateAllAssets(spec, 256);
+    } catch (error) {
+      console.error('Error generating brand assets:', error);
+      return {
+        icon: undefined,
+        wordmark: '',
+        monogram: undefined,
+        lockups: {
+          left: '',
+          stacked: '',
+          badge: '',
+        },
+      };
+    }
+  }, [spec]);
+
+  // Get hero asset based on user's selected style and remove background for preview
+  const heroAsset = useMemo(() => {
+    try {
+      const asset = getAssetForContext(brandAssets, 'hero-preview', spec.heroStyle);
+      // Remove the background rect from the SVG for transparent preview
+      return asset.replace(/<rect[^>]*fill="[^"]*"[^>]*\/?>(?:<\/rect>)?/g, '');
+    } catch (error) {
+      console.error('Error getting hero asset:', error);
+      return '';
+    }
+  }, [brandAssets, spec.heroStyle]);
   
   const formatsV2 = useMemo(() => {
     try {
@@ -310,9 +341,9 @@ export default function BrandKitGenerator() {
                 {/* Style & Color – Conditional icon controls: show "Add icon" when none; expose modify/remove under Advanced */}
                 <div className="space-y-10">
                   <div>
-                    <FormField control={form.control} name="template" render={({ field }) => (
+                    <FormField control={form.control} name="heroStyle" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Style</FormLabel>
+                        <FormLabel className="uppercase tracking-[0.2em] text-xs font-semibold mb-2">Hero Style</FormLabel>
                         <FormControl>
                           <div className="flex flex-wrap gap-2">
                             {(["mark-only", "left-lockup", "stacked", "badge"] as const).map((t) => {
@@ -332,6 +363,9 @@ export default function BrandKitGenerator() {
                           </div>
                         </FormControl>
                         <FormMessage />
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Controls the main preview above. We'll generate all asset variants for different use cases.
+                        </p>
                       </FormItem>
                     )} />
                   </div>
@@ -490,7 +524,7 @@ export default function BrandKitGenerator() {
                 { key: "app", label: "App icon" },
                 { key: "browser", label: "Browser" },
                 { key: "phone", label: "Phone" },
-                { key: "ios", label: "iOS" },
+                { key: "macos", label: "macOS" },
                 { key: "website", label: "Website" },
                 { key: "card", label: "Business card" },
                 { key: "social", label: "Social profile" },
@@ -517,16 +551,25 @@ export default function BrandKitGenerator() {
                   <div
                     className="mx-auto rounded-2xl flex items-center justify-center overflow-hidden aspect-square"
                     style={{
-                      width: 'min(100%, 640px, calc(100vh - 240px))',
-                      backgroundColor: spec.colors.background,
+                      width: 'min(100%, 400px, calc(100vh - 320px))',
+                      maxWidth: '400px',
+                      maxHeight: '400px',
+                      background: spec.background.type === 'solid' 
+                        ? spec.background.color
+                        : `linear-gradient(${spec.background.angle}deg, ${spec.background.stops.map(s => `${s.color} ${s.at * 100}%`).join(', ')})`,
                     }}
                   >
-                    {renderResult.lockup ? (
+                    {heroAsset ? (
                       <div
-                        key={`${spec.name}|${spec.iconId}|${spec.colors.primary}|${spec.template}`}
+                        key={`${spec.name}|${spec.iconId}|${spec.colors.primary}|${spec.heroStyle}`}
                         className="w-full h-full grid place-items-center"
-                        style={{ transform: 'scale(0.8)', transformOrigin: 'center' }}
-                        dangerouslySetInnerHTML={{ __html: renderResult.lockup }}
+                        style={{ 
+                          transform: 'scale(0.6)', 
+                          transformOrigin: 'center',
+                          maxWidth: '280px',
+                          maxHeight: '280px'
+                        }}
+                        dangerouslySetInnerHTML={{ __html: heroAsset }}
                       />
                     ) : null}
                   </div>
@@ -537,7 +580,7 @@ export default function BrandKitGenerator() {
                     <div className="p-6">
                       <div
                         className="w-full"
-                        dangerouslySetInnerHTML={{ __html: renderLockupV2({ ...spec, template: 'left-lockup' }, 256) }}
+                        dangerouslySetInnerHTML={{ __html: getAssetForContext(brandAssets, 'website-header') }}
                       />
                     </div>
                   </div>
@@ -557,7 +600,7 @@ export default function BrandKitGenerator() {
                 {view === "card" && (
                   <div className="mx-auto w-full max-w-3xl">
                     <div className="aspect-[3/2] rounded-xl bg-white border grid place-items-center">
-                      <div className="scale-90" dangerouslySetInnerHTML={{ __html: renderLockupV2({ ...spec, template: 'left-lockup' }, 256) }} />
+                      <div className="scale-90" dangerouslySetInnerHTML={{ __html: getAssetForContext(brandAssets, 'business-card') }} />
                     </div>
                   </div>
                 )}
@@ -579,8 +622,8 @@ export default function BrandKitGenerator() {
                 {view === "phone" && (
                   <IPhoneMockup spec={spec} />
                 )}
-                {view === "ios" && (
-                  <NativeIOSMockup spec={spec} />
+                {view === "macos" && (
+                  <MacOSMockup spec={spec} />
                 )}
                 {view === "website" && (
                   <WebsiteMockup spec={spec} />
@@ -663,13 +706,50 @@ function ColorSwatchRow({ value, onChange, presets }: { value: string; onChange:
 }
 
 function BackgroundPicker({ value, onChange }: { value: BrandSpecV2['background']; onChange: (bg: BrandSpecV2['background']) => void }) {
+  const [mode, setMode] = useState<'solid' | 'gradient'>(value.type === 'solid' ? 'solid' : 'gradient');
   const solidPresets = ["#000000", "#0B0B0F", "#111827", "#FFFFFF", "#F9FAFB", "#FFF7ED"];
+  
+  // Initialize gradient state
+  const currentGradient = value.type === 'linear-gradient' ? value : {
+    type: 'linear-gradient' as const,
+    angle: 45,
+    stops: [
+      { color: '#FF6B6B', at: 0 },
+      { color: '#4ECDC4', at: 1 }
+    ]
+  };
   
   return (
     <div className="space-y-4">
-      {/* Solid Colors */}
-      <div>
-        <div className="text-xs text-muted-foreground mb-2">Solid Colors</div>
+      {/* Mode Toggle */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setMode('solid');
+            if (value.type !== 'solid') {
+              onChange({ type: 'solid', color: '#000000' });
+            }
+          }}
+          className={`rounded-full px-4 py-2 text-sm font-medium border transition-colors outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 ${mode === 'solid' ? "bg-black text-white border-transparent" : "bg-card text-foreground border-neutral-300 hover:bg-neutral-100"}`}
+        >
+          Solid
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setMode('gradient');
+            if (value.type === 'solid') {
+              onChange(currentGradient);
+            }
+          }}
+          className={`rounded-full px-4 py-2 text-sm font-medium border transition-colors outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 ${mode === 'gradient' ? "bg-black text-white border-transparent" : "bg-card text-foreground border-neutral-300 hover:bg-neutral-100"}`}
+        >
+          Gradient
+        </button>
+      </div>
+
+      {mode === 'solid' ? (
         <div className="flex items-center gap-3">
           {solidPresets.map((color) => {
             const isSelected = value.type === 'solid' && value.color.toLowerCase() === color.toLowerCase();
@@ -694,30 +774,114 @@ function BackgroundPicker({ value, onChange }: { value: BrandSpecV2['background'
             />
           </label>
         </div>
+      ) : (
+        <GradientPicker
+          value={currentGradient}
+          onChange={(gradient) => onChange(gradient)}
+        />
+      )}
+    </div>
+  );
+}
+
+function GradientPicker({ value, onChange }: { value: { type: 'linear-gradient'; angle: number; stops: { color: string; at: number }[] }; onChange: (gradient: { type: 'linear-gradient'; angle: number; stops: { color: string; at: number }[] }) => void }) {
+  const color1 = value.stops[0]?.color || '#FF6B6B';
+  const color2 = value.stops[1]?.color || '#4ECDC4';
+  const angle = value.angle;
+  
+  const updateGradient = (updates: Partial<{ color1: string; color2: string; angle: number }>) => {
+    onChange({
+      ...value,
+      angle: updates.angle ?? angle,
+      stops: [
+        { color: updates.color1 ?? color1, at: 0 },
+        { color: updates.color2 ?? color2, at: 1 }
+      ]
+    });
+  };
+
+  const gradientStyle = `linear-gradient(${angle}deg, ${color1} 0%, ${color2} 100%)`;
+  
+  return (
+    <div className="space-y-4">
+      {/* Gradient Preview */}
+      <div
+        className="w-full h-20 rounded-xl border border-neutral-200"
+        style={{ background: gradientStyle }}
+      />
+      
+      {/* Angle Control */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em]">Angle</span>
+          <span className="text-sm font-medium">{angle}°</span>
+        </div>
+        <Slider
+          value={[angle]}
+          onValueChange={([newAngle]) => updateGradient({ angle: newAngle })}
+          min={0}
+          max={360}
+          step={15}
+          trackClassName="bg-neutral-200"
+          rangeClassName="bg-neutral-900"
+          thumbClassName="h-6 w-6 border-neutral-900"
+        />
       </div>
       
-      {/* Gradients */}
-      <div>
-        <div className="text-xs text-muted-foreground mb-2">Gradients</div>
-        <div className="flex items-center gap-3 flex-wrap">
-          {gradientPresets.map((gradient, index) => {
-            const isSelected = value.type === 'linear-gradient' && 
-              value.angle === gradient.angle && 
-              JSON.stringify(value.stops) === JSON.stringify(gradient.stops);
-            
-            const gradientStyle = `linear-gradient(${gradient.angle}deg, ${gradient.stops.map(s => `${s.color} ${s.at * 100}%`).join(', ')})`;
-            
-            return (
-              <button
-                key={index}
-                type="button"
-                aria-label={`Choose gradient ${index + 1}`}
-                onClick={() => onChange(gradient)}
-                className={`h-8 w-8 rounded-full border-2 ${isSelected ? 'border-black' : 'border-transparent'} shadow-sm`}
-                style={{ background: gradientStyle }}
-              />
-            );
-          })}
+      {/* Color Controls */}
+      <div className="space-y-4">
+        <div className="space-y-3">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em]">Color 1</span>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-full border border-neutral-300"
+              style={{ backgroundColor: color1 }}
+            />
+            <input
+              type="color"
+              value={color1}
+              onChange={(e) => updateGradient({ color1: e.target.value })}
+              className="w-12 h-8 border border-neutral-300 rounded cursor-pointer"
+            />
+            <input
+              type="text"
+              value={color1}
+              onChange={(e) => {
+                if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value) || e.target.value === '') {
+                  updateGradient({ color1: e.target.value });
+                }
+              }}
+              className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900"
+              placeholder="#000000"
+            />
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em]">Color 2</span>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-full border border-neutral-300"
+              style={{ backgroundColor: color2 }}
+            />
+            <input
+              type="color"
+              value={color2}
+              onChange={(e) => updateGradient({ color2: e.target.value })}
+              className="w-12 h-8 border border-neutral-300 rounded cursor-pointer"
+            />
+            <input
+              type="text"
+              value={color2}
+              onChange={(e) => {
+                if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value) || e.target.value === '') {
+                  updateGradient({ color2: e.target.value });
+                }
+              }}
+              className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900"
+              placeholder="#000000"
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -8,11 +8,33 @@ export type BackgroundSpec = BgSolid | BgLinear;
 
 export type TemplateV2 = "mark-only" | "left-lockup" | "stacked" | "badge";
 
+// Asset context types for smart selection
+export type AssetContext = 
+  | "favicon"
+  | "social-avatar" 
+  | "app-icon"
+  | "website-header"
+  | "business-card"
+  | "hero-preview"
+  | "export";
+
+// Generated brand assets
+export type BrandAssets = {
+  icon?: string;        // SVG for icon/mark only (if iconId provided)
+  wordmark: string;     // SVG for text-only with styling
+  monogram?: string;    // SVG fallback monogram from initials (if no icon)
+  lockups: {
+    left: string;       // SVG for left lockup
+    stacked: string;    // SVG for stacked layout  
+    badge: string;      // SVG for badge layout
+  };
+};
+
 export type BrandSpecV2 = {
   version: 2;
   name: string;
   initial: string;
-  template: TemplateV2;
+  heroStyle: TemplateV2; // What shows in main preview (renamed from 'template')
   iconId: string; // e.g. "shape:rounded-square" or "lucide:sparkles"; may be empty for no icon
   colors: {
     primary: string;
@@ -53,7 +75,7 @@ export const defaultSpecV2: BrandSpecV2 = {
   version: 2,
   name: "",
   initial: "",
-  template: "left-lockup",
+  heroStyle: "left-lockup",
   iconId: "",
   colors: {
     primary: "#FFF7ED", // Tailwind orange-50

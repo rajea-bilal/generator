@@ -32,6 +32,17 @@ export { markRibbon } from './marks/ribbon';
 export { markSoft } from './marks/soft';
 
 // V2 API (icon/shape-first)
-export type { BrandSpecV2, BackgroundSpec, TemplateV2 } from './types.v2';
+export type { BrandSpecV2, BackgroundSpec, TemplateV2, AssetContext, BrandAssets } from './types.v2';
 export { defaultSpecV2, gradientPresets } from './types.v2';
-export { renderSvgsV2, renderMarkV2, renderLockupV2, renderFormatsV2 } from './renderer.v2';
+export { 
+  renderSvgsV2, 
+  renderMarkV2, 
+  renderLockupV2, 
+  renderFormatsV2,
+  renderIconAsset,
+  renderWordmarkAsset,
+  renderMonogramAsset,
+  renderLockupAsset,
+  generateAllAssets,
+  getAssetForContext
+} from './renderer.v2';
