@@ -26,7 +26,7 @@ export function MacOSMockup({ spec }: Props) {
 	
 	const dockIconSvg = React.useMemo(() => {
 		// Generate app icon with macOS-style rounded corners (18% radius)
-		return renderAppIconV2(iconSpec, 34, 19);
+		return renderAppIconV2(iconSpec, 37, 19);
 	}, [iconSpec]);
 
 	// Measure the mockup image for pixel-accurate placement
@@ -54,7 +54,7 @@ export function MacOSMockup({ spec }: Props) {
 		if (!size) return null;
 		
 		// Dock icon position (centered on the empty dock slot)
-		const dockCenter = { left: 0.618, bottom: 0.0994 }; // 61% from left, 4.2% from bottom
+		const dockCenter = { left: 0.618, bottom: 0.0998 }; // 61% from left, 4.2% from bottom
 		const iconSize = Math.round(size.w * 0.09); // 9% of image width
 		
 		const x = Math.round(size.w * dockCenter.left - iconSize / 2);

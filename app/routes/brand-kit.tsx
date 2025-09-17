@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getInitialFromName } from '../lib/brand-kit';
-import { defaultSpecV2, renderSvgsV2, renderFormatsV2, renderMarkV2, renderLockupV2, generateAllAssets, getAssetForContext, type BrandSpecV2 } from '../lib/brand-kit';
+import { defaultSpecV2, renderSvgsV2, renderFormatsV2, renderMarkV2, renderLockupV2, renderAppIconV2, generateAllAssets, getAssetForContext, type BrandSpecV2 } from '../lib/brand-kit';
 import { AppIconMockup } from "../components/mockups/app-icon";
 import { BrowserMockup } from "../components/mockups/browser-mockup";
 import { IPhoneMockup } from "../components/mockups/iphone-mockup";
@@ -57,7 +57,7 @@ export default function BrandKitGenerator() {
   const [spec, setSpec] = useState<BrandSpecV2>(defaultSpecV2);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [view, setView] = useState<"hero" | "header" | "app" | "card" | "social" | "browser" | "phone" | "macos" | "website">("hero");
+  const [view, setView] = useState<"hero" | "app" | "social" | "browser" | "phone" | "macos" | "website">("hero");
   
   // Hydrate defaults from query string (Fast Start wizard)
   useEffect(() => {
@@ -508,13 +508,11 @@ export default function BrandKitGenerator() {
             <div className="flex flex-wrap gap-2">
               {[
                 { key: "hero", label: "Hero" },
-                { key: "header", label: "Website header" },
                 { key: "app", label: "App icon" },
                 { key: "browser", label: "Browser" },
                 { key: "phone", label: "Phone" },
                 { key: "macos", label: "macOS" },
-                { key: "website", label: "Website" },
-                { key: "card", label: "Business card" },
+                { key: "website", label: "Website header" },
                 { key: "social", label: "Social profile" },
               ].map(({ key, label }) => {
                 const k = key as typeof view;
@@ -562,17 +560,6 @@ export default function BrandKitGenerator() {
                     ) : null}
                   </div>
                 )}
-                {view === "header" && (
-                  <div className="mx-auto w-full max-w-3xl rounded-lg border bg-white">
-                    <div className="h-12 w-full border-b bg-neutral-50" />
-                    <div className="p-6">
-                      <div
-                        className="w-full"
-                        dangerouslySetInnerHTML={{ __html: getAssetForContext(brandAssets, 'website-header') }}
-                      />
-                    </div>
-                  </div>
-                )}
                 {view === "app" && (
                   <div className="mx-auto">
                     <div className="grid grid-cols-3 gap-6">
@@ -585,19 +572,12 @@ export default function BrandKitGenerator() {
                     </div>
                   </div>
                 )}
-                {view === "card" && (
-                  <div className="mx-auto w-full max-w-3xl">
-                    <div className="aspect-[3/2] rounded-xl bg-white border grid place-items-center">
-                      <div className="scale-90" dangerouslySetInnerHTML={{ __html: getAssetForContext(brandAssets, 'business-card') }} />
-                    </div>
-                  </div>
-                )}
                 {view === "social" && (
                   <div className="mx-auto flex items-center gap-8">
                     {[64, 96, 128].map((sz) => (
                       <div key={sz} className="flex flex-col items-center gap-2">
-                        <div className="rounded-full overflow-hidden bg-black grid place-items-center" style={{ width: sz, height: sz }}>
-                          <div className="scale-75" dangerouslySetInnerHTML={{ __html: renderMarkV2(spec, 256) }} />
+                        <div className="rounded-full overflow-hidden grid place-items-center" style={{ width: sz, height: sz }}>
+                          <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: renderAppIconV2(spec, sz, 50) }} />
                         </div>
                         <span className="text-xs text-muted-foreground">{sz}×{sz}</span>
                       </div>
