@@ -1,5 +1,5 @@
 import * as React from "react";
-import { generateAllAssets, getAssetForContext, renderFaviconV2 } from "../../lib/brand-kit";
+import { generateAllAssets, getAssetForContext, renderAppIconV2 } from "../../lib/brand-kit";
 import type { BrandSpecV2, BrandAssets } from "../../lib/brand-kit";
 
 type Props = {
@@ -17,13 +17,14 @@ type Props = {
 export function BrowserMockup({ spec }: Props) {
 	// Generate all brand assets
 	const assets = React.useMemo(() => {
-		return generateAllAssets({ ...spec, params: { ...spec.params, padding: 6 } }, 64);
+		return generateAllAssets({ ...spec, params: { ...spec.params, padding: 8 } }, 64);
 	}, [spec]);
 	
-	// Generate favicon with rounded corners for browser UI
+	// Generate favicon with user's background styling and rounded corners for browser UI
 	const faviconSvg = React.useMemo(() => {
 		// Use 15% corner radius for browser favicons (more subtle than app icons)
-		let s = renderFaviconV2(spec, 64, 15);
+		// Use renderAppIconV2 to preserve user's background color/gradient instead of forced white
+		let s = renderAppIconV2(spec, 100, 13);
 		s = s
 			.replace(/width="[^"]+"/i, 'width="100%"')
 			.replace(/height="[^"]+"/i, 'height="100%"')
@@ -52,15 +53,15 @@ export function BrowserMockup({ spec }: Props) {
 	}, []);
 
 	// Small favicon dimensions - adjusted to better match mockup placeholders
-	const outerPx = 18; // 18×18 favicon to match gray placeholders
+	const outerPx = 13; // 18×18 favicon to match gray placeholders
 
 	// Positions (center ratios) measured against the browser mockup image
 	// Tab favicon - gray square in the browser tab
-	const tabCenter = { left: 0.250, top: 0.220 };
+	const tabCenter = { left: 0.250, top: 0.216 };
 	// Address bar favicon - gray square next to URL in address bar
 	const addrCenter = { left: 0.275, top: 0.29 };
 	// Large in-page preview square - large gray square in bottom right
-	const pageSquare = { left: 0.425, top: 0.45, sideRatioW: 0.16 }; // side = 16% of image width
+	const pageSquare = { left: 0.425, top: 0.45, sideRatioW: 0.14 }; // side = 16% of image width
 
 	const renderSmallFavicon = (center: { left: number; top: number }, key: string) => {
 		if (!size) return null;
