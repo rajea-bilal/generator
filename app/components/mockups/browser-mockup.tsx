@@ -1,5 +1,5 @@
 import * as React from "react";
-import { generateAllAssets, getAssetForContext } from "../../lib/brand-kit";
+import { generateAllAssets, getAssetForContext, renderFaviconV2 } from "../../lib/brand-kit";
 import type { BrandSpecV2, BrandAssets } from "../../lib/brand-kit";
 
 type Props = {
@@ -20,15 +20,16 @@ export function BrowserMockup({ spec }: Props) {
 		return generateAllAssets({ ...spec, params: { ...spec.params, padding: 6 } }, 64);
 	}, [spec]);
 	
-	// Get the appropriate asset for favicon context
+	// Generate favicon with rounded corners for browser UI
 	const faviconSvg = React.useMemo(() => {
-		let s = getAssetForContext(assets, 'favicon');
+		// Use 15% corner radius for browser favicons (more subtle than app icons)
+		let s = renderFaviconV2(spec, 64, 15);
 		s = s
 			.replace(/width="[^"]+"/i, 'width="100%"')
 			.replace(/height="[^"]+"/i, 'height="100%"')
 			.replace(/preserveAspectRatio="[^"]+"/i, 'preserveAspectRatio="xMidYMid meet"');
 		return s;
-	}, [assets]);
+	}, [spec]);
 
 	// Measure the mockup image for pixel-accurate placement
 	const imgRef = React.useRef<HTMLImageElement | null>(null);
@@ -50,32 +51,8 @@ export function BrowserMockup({ spec }: Props) {
 		};
 	}, []);
 
-	// Keyline rule for light backgrounds
-	const bg = spec.colors.background || '#FFFFFF';
-	const toRGB = (c: string) => {
-		const v = c.replace('#', '');
-		const n = v.length === 3 ? v.split('').map(x => x + x).join('') : v;
-		const r = parseInt(n.slice(0, 2), 16);
-		const g = parseInt(n.slice(2, 4), 16);
-		const b = parseInt(n.slice(4, 6), 16);
-		return { r, g, b };
-	};
-	const luminance = (c: string) => {
-		const { r, g, b } = toRGB(c);
-		return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-	};
-	const needKeyline = luminance(bg) > 0.86; // very light backgrounds
-	const keylineColor = '#D1D5DB';
-
 	// Small favicon dimensions - adjusted to better match mockup placeholders
 	const outerPx = 18; // 18×18 favicon to match gray placeholders
-	const innerPx = 16; // safe-zone
-	const radiusPx = 3; // 3 px rounded corners
-	const padPx = Math.round((outerPx - innerPx) / 2);
-
-	// Large in-page preview square (measured ratios)
-	const largeRadiusPx = 12; // approximate corner radius to match mock
-	const largePadPx = 7; // 6–8 px padding rule
 
 	// Positions (center ratios) measured against the browser mockup image
 	// Tab favicon - gray square in the browser tab
@@ -100,15 +77,9 @@ export function BrowserMockup({ spec }: Props) {
 					top: `${y}px`,
 					width: `${outerPx}px`,
 					height: `${outerPx}px`,
-					borderRadius: `${radiusPx}px`,
-					background: bg,
-					border: needKeyline ? `1px solid ${keylineColor}` : 'none',
-					boxSizing: 'border-box',
 				}}
 			>
-				<div style={{ width: `${innerPx}px`, height: `${innerPx}px`, margin: `${padPx}px` }}>
-					<div className="w-full h-full" dangerouslySetInnerHTML={{ __html: faviconSvg }} />
-				</div>
+				<div className="w-full h-full" dangerouslySetInnerHTML={{ __html: faviconSvg }} />
 			</div>
 		);
 	};
@@ -126,15 +97,9 @@ export function BrowserMockup({ spec }: Props) {
 					top: `${y}px`,
 					width: `${side}px`,
 					height: `${side}px`,
-					borderRadius: `${largeRadiusPx}px`,
-					background: bg,
-					border: needKeyline ? `1px solid ${keylineColor}` : 'none',
-					boxSizing: 'border-box',
 				}}
 			>
-				<div style={{ width: `${side - largePadPx * 2}px`, height: `${side - largePadPx * 2}px`, margin: `${largePadPx}px` }}>
-					<div className="w-full h-full" dangerouslySetInnerHTML={{ __html: faviconSvg }} />
-				</div>
+				<div className="w-full h-full" dangerouslySetInnerHTML={{ __html: faviconSvg }} />
 			</div>
 		);
 	};

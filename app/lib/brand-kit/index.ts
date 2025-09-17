@@ -37,6 +37,8 @@ export { defaultSpecV2, gradientPresets } from './types.v2';
 export { 
   renderSvgsV2, 
   renderMarkV2, 
+  renderAppIconV2,
+  renderFaviconV2,
   renderLockupV2, 
   renderFormatsV2,
   renderIconAsset,

@@ -18,7 +18,7 @@ export function WebsiteMockup({ spec }: Props) {
 			...spec,
 			colors: {
 				...spec.colors,
-				text: '#FFFFFF', // White text for visibility on website
+				text: '#000000', // Dark text for visibility on light website header
 				primary: spec.colors.primary || '#F97316'
 			}
 		};
@@ -29,11 +29,17 @@ export function WebsiteMockup({ spec }: Props) {
 	}, [websiteSpec]);
 	
 	const svg = React.useMemo(() => {
-		return getAssetForContext(assets, 'website-header');
+		let result = getAssetForContext(assets, 'website-header');
+		// Modify SVG to scale properly like other mockups
+		result = result
+			.replace(/width="[^"]+"/i, 'width="100%"')
+			.replace(/height="[^"]+"/i, 'height="100%"')
+			.replace(/preserveAspectRatio="[^"]+"/i, 'preserveAspectRatio="xMidYMid meet"');
+		return result;
 	}, [assets]);
 
 	return (
-		<div className="mx-auto w-full max-w-4xl">
+		<div className="mx-auto w-full max-w-4xl ">
 			<div className="relative rounded-lg overflow-hidden shadow-lg">
 				{/* Website mockup background */}
 				<img 
@@ -44,18 +50,29 @@ export function WebsiteMockup({ spec }: Props) {
 				
 				{/* Generated logo positioned exactly over gray logo box */}
 				<div 
-					className="absolute grid place-items-center"
+					className="absolute rounded-lg overflow-hidden "
 					style={{
-						top: '2.8%',
-						left: '3.2%',
-						width: '8.5%',
-						height: '4.2%'
+						top: '-0.05%',
+						left: '5.0%',
+						width: '7%',
+						height: '10%',
+						backgroundColor: 'rgba(255, 255, 255, 0.95)',
+						backdropFilter: 'blur(8px)',
+						boxSizing: 'border-box'
 					}}
 				>
-					<div
-						className="w-full h-full grid place-items-center"
-						dangerouslySetInnerHTML={{ __html: svg }}
-					/>
+					<div 
+						className="w-full h-full grid place-items-center "
+						style={{ 
+							padding: '5px',
+							boxSizing: 'border-box'
+						}}
+					>
+						<div 
+							className="w-full h-full" 
+							dangerouslySetInnerHTML={{ __html: svg }} 
+						/>
+					</div>
 				</div>
 			</div>
 		</div>

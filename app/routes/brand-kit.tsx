@@ -104,7 +104,7 @@ export default function BrandKitGenerator() {
   });
 
   useEffect(() => {
-    const sub = form.watch((values) => {
+    const sub = form.watch((values, { name: fieldName }) => {
       if (!values) return;
       setSpec((prev) => ({
         ...prev,
@@ -120,8 +120,9 @@ export default function BrandKitGenerator() {
           text: values.colors?.text ?? prev.colors.text,
           background: values.colors?.background ?? prev.colors.background,
         },
-        // Keep renderer background in sync with the chosen background color
-        background: values.colors?.background
+        // Only update spec.background when the background color field specifically changes
+        // This prevents gradient backgrounds from being overridden when other fields change
+        background: fieldName === 'colors.background' && values.colors?.background
           ? ({ type: 'solid', color: values.colors.background } as const)
           : prev.background,
       }));
@@ -462,19 +463,6 @@ export default function BrandKitGenerator() {
                         />
                       </div>
                       <div className="space-y-4">
-                        <Label className="uppercase tracking-[0.2em] text-xs font-semibold mb-3">Stroke</Label>
-                        <Slider
-                          value={[spec.params.stroke]}
-                          onValueChange={([v]) => updateParams({ stroke: v })}
-                          min={0}
-                          max={8}
-                          step={1}
-                          trackClassName="bg-neutral-200"
-                          rangeClassName="bg-neutral-900"
-                          thumbClassName="h-6 w-6 border-neutral-900"
-                        />
-                      </div>
-                      <div className="space-y-4">
                         <Label className="uppercase tracking-[0.2em] text-xs font-semibold mb-3">Corner Radius</Label>
                         <Slider
                           value={[spec.params.cornerRadius]}
@@ -564,7 +552,7 @@ export default function BrandKitGenerator() {
                         key={`${spec.name}|${spec.iconId}|${spec.colors.primary}|${spec.heroStyle}`}
                         className="w-full h-full grid place-items-center"
                         style={{ 
-                          transform: 'scale(0.6)', 
+                          transform: 'scale(0.9)', 
                           transformOrigin: 'center',
                           maxWidth: '280px',
                           maxHeight: '280px'
@@ -623,7 +611,12 @@ export default function BrandKitGenerator() {
                   <IPhoneMockup spec={spec} />
                 )}
                 {view === "macos" && (
-                  <MacOSMockup spec={spec} />
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground text-center">
+                      Note: macOS dock icons automatically show icon-only or monogram. Text-based logos will display as a monogram.
+                    </p>
+                    <MacOSMockup spec={spec} />
+                  </div>
                 )}
                 {view === "website" && (
                   <WebsiteMockup spec={spec} />

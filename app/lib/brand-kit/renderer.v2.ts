@@ -3,27 +3,28 @@ import { ALL_ICONS } from './icons/registry';
 import { shapeRoundedSquare, shapeCircle, shapeCapsule } from './icons/shapes';
 import { fontFamilies } from './types';
 
-function renderBackground(bg: BackgroundSpec, size: number): string {
+function renderBackground(bg: BackgroundSpec, size: number, cornerRadius: number = 0): string {
+  const radiusAttr = cornerRadius > 0 ? ` rx="${cornerRadius}" ry="${cornerRadius}"` : '';
+  
   if (bg.type === 'solid') {
-    return `<rect width="${size}" height="${size}" fill="${bg.color}"/>`;
+    return `<rect width="${size}" height="${size}" fill="${bg.color}"${radiusAttr}/>`;
   }
-  const id = `grad_${Math.random().toString(36).slice(2, 8)}`;
+  const id = `grad_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
   const stops = bg.stops
     .map((s, i) => `<stop offset="${Math.round(s.at * 100)}%" stop-color="${s.color}"/>`)
     .join('');
   return `
   <defs>
-    <linearGradient id="${id}" gradientTransform="rotate(${bg.angle})">
+    <linearGradient id="${id}" x1="0%" y1="0%" x2="100%" y2="100%" gradientTransform="rotate(${bg.angle} 0.5 0.5)">
       ${stops}
     </linearGradient>
   </defs>
-  <rect width="${size}" height="${size}" fill="url(#${id})"/>
+  <rect width="${size}" height="${size}" fill="url(#${id})"${radiusAttr}/>
   `;
 }
 
 function renderIconOrShape(spec: BrandSpecV2, size: number): string {
   const color = spec.colors.primary;
-  const stroke = Math.max(0, Math.min(8, spec.params.stroke));
   const scale = 1.0; // avoid root clipping; size will be controlled at layout level
   const rotate = spec.params.rotate;
   const padding = spec.params.padding;
@@ -35,13 +36,13 @@ function renderIconOrShape(spec: BrandSpecV2, size: number): string {
   } else if (spec.iconId.startsWith('shape:')) {
     const kind = spec.iconId.split(':')[1];
     if (kind === 'rounded-square') {
-      inner = shapeRoundedSquare({ size: size - padding * 2, color, cornerRadius: spec.params.cornerRadius, stroke });
+      inner = shapeRoundedSquare({ size: size - padding * 2, color, cornerRadius: spec.params.cornerRadius });
     } else if (kind === 'circle') {
-      inner = shapeCircle({ size: size - padding * 2, color, cornerRadius: 0, stroke });
+      inner = shapeCircle({ size: size - padding * 2, color, cornerRadius: 0 });
     } else if (kind === 'capsule') {
-      inner = shapeCapsule({ size: size - padding * 2, color, cornerRadius: 0, stroke });
+      inner = shapeCapsule({ size: size - padding * 2, color, cornerRadius: 0 });
     } else {
-      inner = shapeRoundedSquare({ size: size - padding * 2, color, cornerRadius: spec.params.cornerRadius, stroke });
+      inner = shapeRoundedSquare({ size: size - padding * 2, color, cornerRadius: spec.params.cornerRadius });
     }
   } else {
     const def = ALL_ICONS[spec.iconId];
@@ -66,7 +67,7 @@ function renderIconOrShape(spec: BrandSpecV2, size: number): string {
         let rawInner = def.raw;
         rawInner = rawInner.replace(/<svg[^>]*>/i, '').replace(/<\/svg>\s*$/i, '');
         // Render as outline: no fills, use stroke color, and keep stroke width constant when scaling
-        inner = `<g transform="scale(${factor}) translate(${translate}, ${translate})" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke">${rawInner}</g>`;
+        inner = `<g transform="scale(${factor}) translate(${translate}, ${translate})" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${rawInner}</g>`;
       } else {
         // Unknown icon definition: render nothing rather than forcing a shape
         inner = '';
@@ -230,6 +231,31 @@ export function getAssetForContext(assets: BrandAssets, context: AssetContext, f
 
 export function renderMarkV2(spec: BrandSpecV2, size: number = 256): string {
   const bg = renderBackground(spec.background, size);
+  const icon = renderIconOrShape(spec, size);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${bg}${icon}</svg>`;
+}
+
+/**
+ * Renders mark with rounded corners for app icons (macOS, iOS, etc.)
+ */
+export function renderAppIconV2(spec: BrandSpecV2, size: number = 256, cornerRadiusPercent: number = 18): string {
+  const cornerRadius = Math.round(size * (cornerRadiusPercent / 100));
+  const bg = renderBackground(spec.background, size, cornerRadius);
+  const icon = renderIconOrShape(spec, size);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${bg}${icon}</svg>`;
+}
+
+/**
+ * Renders favicon with rounded corners for browser contexts
+ */
+export function renderFaviconV2(spec: BrandSpecV2, size: number = 64, cornerRadiusPercent: number = 15): string {
+  const cornerRadius = Math.round(size * (cornerRadiusPercent / 100));
+  // Use white background for favicons
+  const faviconSpec = {
+    ...spec,
+    background: { type: 'solid' as const, color: '#FFFFFF' }
+  };
+  const bg = renderBackground(faviconSpec.background, size, cornerRadius);
   const icon = renderIconOrShape(spec, size);
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${bg}${icon}</svg>`;
 }

@@ -49,7 +49,6 @@ export type BrandSpecV2 = {
     textScale: number;   // 0.6–1.6 multiplier for wordmark font size
     letterSpacing: number; // -2–6 px letter-spacing for wordmark
     rotate: number;      // -45–45 (deg)
-    stroke: number;      // 0–8 (px)
     cornerRadius: number;// 0–64 (px) for shapes
     padding: number;     // 0–40 (px)
     lockupGap: number;   // 0–48 (px) distance between mark and text
@@ -90,7 +89,6 @@ export const defaultSpecV2: BrandSpecV2 = {
     textScale: 1.0,
     letterSpacing: 0,
     rotate: 0,
-    stroke: 0,
     cornerRadius: 16,
     padding: 16,
     lockupGap: 12,
