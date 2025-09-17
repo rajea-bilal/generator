@@ -26,7 +26,7 @@ export function MacOSMockup({ spec }: Props) {
 	
 	const dockIconSvg = React.useMemo(() => {
 		// Generate app icon with macOS-style rounded corners (18% radius)
-		return renderAppIconV2(iconSpec, 33, 19);
+		return renderAppIconV2(iconSpec, 34, 19);
 	}, [iconSpec]);
 
 	// Measure the mockup image for pixel-accurate placement
